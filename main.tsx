@@ -44,10 +44,21 @@ const handler = (req: Request) =>
         color: #ffffffec;
       }
       `,
+      `
+      .wrapper {
+        width: 704px; margin: 0 auto;
+      }
+      @media (max-width: 768px) {
+        .wrapper {
+          width: 100%;
+          padding: 0 20px;
+        }
+      }
+      `,
     ],
     body: (
       <body>
-        <div style="width: 704px; margin: 0 auto;">
+        <div class="wrapper">
           <h2 style="font-weight: 500;margin-bottom: 0">Hello, I'm</h2>
           <h1 style="font-size: 2rem; font-weight: 600; margin-top: 0">
             Tsiry Sandratraina
