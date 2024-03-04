@@ -1,5 +1,5 @@
 /** @jsx h */
-import { serve, html, h, dayjs } from "./deps.ts";
+import { serve, html, h, dayjs, cyan } from "./deps.ts";
 import { github } from "./src/github.tsx";
 import { linkedin } from "./src/linkedin.tsx";
 import { twitter } from "./src/twitter.tsx";
@@ -100,4 +100,7 @@ const handler = (req: Request) =>
     ),
   });
 
-serve(handler);
+serve(handler, {
+  onListen: () =>
+    console.log(`Server started on ${cyan("http://localhost:8000")} 🚀`),
+});
