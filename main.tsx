@@ -108,7 +108,7 @@ const handler = (req: Request) =>
             </a>{" "}
             and few other open source projects. <br />
             <br />
-            Wanna to talk about something? Send me a message on{" "}
+            Wanna talk about something? Send me a message on{" "}
             <a href="https://keybase.io/tsiry/chat">Keybase</a> or email me at{" "}
             <a href="mailto:tsiry.sndr@fluentci.io">tsiry.sndr@fluentci.io</a>.
           </div>
