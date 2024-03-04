@@ -55,6 +55,22 @@ const handler = (req: Request) =>
         }
       }
       `,
+      `
+      .blinking_cursor {
+        margin-left: 5px;
+        -webkit-animation: blinker 1s none infinite;
+                animation: blinker 1s none infinite;
+        font-size: 28px;
+      }@-webkit-keyframes blinker {
+        50% {
+          opacity: 0; 
+        } 
+      }@keyframes blinker {
+        50% {
+          opacity: 0; 
+        } 
+      }      
+      `,
     ],
     body: (
       <body>
@@ -62,7 +78,9 @@ const handler = (req: Request) =>
           <h2 style="font-weight: 500;margin-bottom: 0">Hello, I'm</h2>
           <h1 style="font-size: 2rem; font-weight: 600; margin-top: 0">
             Tsiry Sandratraina
+            <b class="blinking_cursor">_</b>
           </h1>
+
           <div style="line-height: 1.6">
             I'm a developer and{" "}
             <a href="https://github.com/tsirysndr" target="_blank">
