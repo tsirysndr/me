@@ -1,5 +1,5 @@
 /** @jsx h */
-import { serve, html, h, cyan } from "./deps.ts";
+import { html, h, cyan } from "./deps.ts";
 import { styles } from "./src/styles.ts";
 import { links } from "./src/links.ts";
 import { footer } from "./src/footer.tsx";
@@ -24,7 +24,13 @@ const handler = (_req: Request) =>
     ),
   });
 
-serve(handler, {
-  onListen: () =>
-    console.log(`Server started on ${cyan("http://localhost:8000")} 🚀`),
-});
+const port = Deno.env.get("PORT") ? Number(Deno.env.get("PORT")) : 8000;
+
+Deno.serve(
+  {
+    port,
+    onListen: () =>
+      console.log(`Server started on ${cyan(`http://localhost:${port}`)} 🚀`),
+  },
+  handler
+);
