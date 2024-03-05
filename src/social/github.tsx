@@ -1,5 +1,5 @@
 /** @jsx h */
-import { h } from "../deps.ts";
+import { h } from "../../deps.ts";
 
 export function github() {
   return (
