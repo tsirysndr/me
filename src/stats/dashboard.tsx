@@ -19,6 +19,17 @@ export function dashboard() {
           />
         </picture>
       </a>
+      <div class="gh-trends">
+        <a
+          href="https://www.githubtrends.io/wrapped/tsirysndr"
+          style="margin-right: 20px;"
+        >
+          <img src="https://api.githubtrends.io/user/svg/tsirysndr/langs?time_range=one_year&theme=ferns" />
+        </a>
+        <a href="https://www.githubtrends.io/wrapped/tsirysndr">
+          <img src="https://api.githubtrends.io/user/svg/tsirysndr/repos?time_range=one_year&theme=ferns" />
+        </a>
+      </div>
       <a href="https://ossinsight.io/analyze/tsirysndr">
         <picture>
           <img

@@ -63,4 +63,17 @@ export const styles = [
   }
   
   `,
+  `
+  .gh-trends {
+    display: flex; 
+    flex-direction: row; 
+    margin-bottom: 20px;
+  }
+
+  @media (max-width: 612px) {
+    .gh-trends {
+      flex-direction: column;
+    }
+  }
+  `,
 ];
