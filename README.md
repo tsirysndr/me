@@ -1,3 +1,5 @@
+![Cover](./.github/assets/preview.png)
+
 # Hi, I'm Tsiry Sandratraina
 
 [![deno compatibility](https://shield.deno.dev/deno/^1.41)](https://deno.com)
