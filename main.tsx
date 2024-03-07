@@ -5,6 +5,9 @@ import { links } from "./src/links.ts";
 import { footer } from "./src/footer.tsx";
 import { bio } from "./src/bio.tsx";
 import { header } from "./src/header.tsx";
+import { dashboard } from "./src/stats/dashboard.tsx";
+import { recentWork } from "./src/stats/recent_work.tsx";
+import { contributions } from "./src/stats/contributions.tsx";
 
 const handler = (_req: Request) =>
   html({
@@ -18,6 +21,11 @@ const handler = (_req: Request) =>
           {bio()}
           <br />
           <br />
+          {dashboard()}
+          <div class="dashboard">
+            <div style="flex: 1; margin-right: 20px;">{recentWork()}</div>
+            <div style="flex: 1">{contributions()}</div>
+          </div>
           {footer()}
         </div>
       </body>
