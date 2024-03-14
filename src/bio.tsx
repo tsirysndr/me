@@ -26,7 +26,7 @@ export function bio() {
       <a href="https://github.com/tsirysndr/tunein-cli" target="_blank">
         TuneIn CLI
       </a>{" "}
-      and few other open source projects. <br />
+      and few other open source projects 🦀 🦕 🧑‍🔬 💻 🚀. <br />
       <br />
       Wanna talk about something? Send me a message on{" "}
       <a href="https://keybase.io/tsiry/chat">Keybase</a> or email me at{" "}
