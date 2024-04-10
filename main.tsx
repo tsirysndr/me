@@ -28,13 +28,13 @@ const handler = (_req: Request) =>
           </div>
           <div>
             <img
+              class="stats"
               src="https://stats.quine.sh/tsirysndr/topics-over-time?theme=dark"
-              width="100%"
               style="margin-bottom: 15px"
             />
             <img
+              class="stats"
               src="https://stats.quine.sh/tsirysndr/languages-over-time?theme=dark"
-              width="100%"
               style="margin-bottom: 15px"
             />
           </div>

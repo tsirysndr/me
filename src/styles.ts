@@ -54,11 +54,17 @@ export const styles = [
     flex-direction: row; 
     margin-bottom: 15px;
   }
+  .stats {
+    width: 50%;
+  }
   @media (max-width: 768px) {
     .dashboard {
       display: flex; 
       flex-direction: column;  
       margin-bottom: 15px;
+    }
+    .stats {
+      width: 100%;
     }
   }
   
