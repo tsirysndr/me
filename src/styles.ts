@@ -2,7 +2,7 @@ export const styles = [
   "html, body { margin: 0; height: 100%; }",
   `body { 
     font-family: "Outfit", sans-serif;
-    background: #1f1e28; 
+    background: #12152b; 
     color: #fff;
     display: flex; 
     flex-direction: column;
@@ -52,13 +52,13 @@ export const styles = [
   .dashboard {
     display: flex; 
     flex-direction: row; 
-    margin-bottom: 100px;
+    margin-bottom: 15px;
   }
   @media (max-width: 768px) {
     .dashboard {
       display: flex; 
-      flex-direction: column; 
-      margin-bottom: 100px;
+      flex-direction: column;  
+      margin-bottom: 15px;
     }
   }
   

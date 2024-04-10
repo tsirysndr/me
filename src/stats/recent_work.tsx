@@ -12,7 +12,7 @@ export function recentWork() {
       <picture>
         <img
           alt="@tsirysndr's Recent Work - Last 28 days"
-          src="https://next.ossinsight.io/widgets/official/compose-currently-working-on/thumbnail.png?user_id=15877106&activity_type=all&image_size=auto&color_scheme=dark"
+          src="https://next.ossinsight.io/widgets/official/compose-currently-working-on/thumbnail.png?user_id=15877106&activity_type=all&image_size=auto&color_scheme=light"
           style="width: 100%;"
           height="auto"
         />

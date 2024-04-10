@@ -13,7 +13,7 @@ export function dashboard() {
         <picture>
           <img
             alt="Dashboard stats of @tsirysndr"
-            src="https://next.ossinsight.io/widgets/official/compose-user-dashboard-stats/thumbnail.png?user_id=15877106&image_size=auto&color_scheme=dark"
+            src="https://next.ossinsight.io/widgets/official/compose-user-dashboard-stats/thumbnail.png?user_id=15877106&image_size=auto&color_scheme=light"
             style="width: 100%;margin-bottom: 20px;"
             height="auto"
           />

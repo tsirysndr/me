@@ -26,6 +26,18 @@ const handler = (_req: Request) =>
             <div style="flex: 1; margin-right: 20px;">{recentWork()}</div>
             <div style="flex: 1">{contributions()}</div>
           </div>
+          <div>
+            <img
+              src="https://stats.quine.sh/tsirysndr/topics-over-time?theme=dark"
+              width="100%"
+              style="margin-bottom: 15px"
+            />
+            <img
+              src="https://stats.quine.sh/tsirysndr/languages-over-time?theme=dark"
+              width="100%"
+              style="margin-bottom: 15px"
+            />
+          </div>
           {footer()}
         </div>
       </body>
