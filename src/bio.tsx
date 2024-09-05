@@ -25,6 +25,10 @@ export function bio() {
       ,{" "}
       <a href="https://github.com/tsirysndr/tunein-cli" target="_blank">
         TuneIn CLI
+      </a>
+      ,{" "}
+      <a href="https://github.com/tsirysndr/rockbox-zig" target="_blank">
+        Rockbox Zig
       </a>{" "}
       and few other open source projects 🦀 🦕 🧑‍🔬 ❄️ 💻 🚀. <br />
       <br />
