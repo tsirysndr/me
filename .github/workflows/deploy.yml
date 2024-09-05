@@ -11,10 +11,11 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Setup Fluent CI
-        uses: fluentci-io/setup-fluentci@v4
-      - name: Run Dagger Pipelines
-        run: |
-          fluentci run deno_pipeline deploy
+        uses: fluentci-io/setup-fluentci@v5
+        with:
+          wasm: true
+          plugin: deno
+          args: deploy main.tsx
         env:
           DENO_PROJECT: ${{ secrets.DENO_PROJECT }}
           DENO_DEPLOY_TOKEN: ${{ secrets.DENO_DEPLOY_TOKEN }}
