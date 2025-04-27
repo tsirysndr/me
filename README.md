@@ -1,4 +1,4 @@
-![Cover](./.github/assets/preview.png)
+![Cover](https://raw.githubusercontent.com/tsirysndr/me/main/.github/assets/preview.png)
 
 # Hi, I'm Tsiry Sandratraina
 
