@@ -25,6 +25,7 @@ function NowPlaying() {
     } | null
   >(null);
   const songRef = useRef(song);
+  const isPlayingRef = useRef(isPlaying);
 
   const fetchNowPlaying = async () => {
     const response = await fetch(
@@ -101,6 +102,11 @@ function NowPlaying() {
     }
 
     progressInterval.current = setInterval(() => {
+      if (!isPlayingRef.current) {
+        setProgress(0);
+        return;
+      }
+
       if (
         songRef.current && songRef.current.progress && songRef.current.duration
       ) {
@@ -157,7 +163,8 @@ function NowPlaying() {
 
   useEffect(() => {
     songRef.current = song;
-  }, [song]);
+    isPlayingRef.current = isPlaying;
+  }, [song, isPlaying]);
 
   return (
     <div>
