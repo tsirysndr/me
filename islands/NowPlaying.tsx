@@ -36,6 +36,25 @@ function NowPlaying() {
       await fetchSpotifyNowPlaying();
       return;
     }
+
+    setIsPlaying(true);
+    setLabel("Now Playing");
+
+    setSong({
+      title: data.title,
+      artist: data.album_artist || data.artist,
+      albumArt: data.album_art,
+      albumUri: data.album_uri
+        ? `https://rocksky.app/${data.album_uri.split("at://")[1]}`
+        : null,
+      songUri: data.song_uri
+        ? `https://rocksky.app/${data.song_uri.split("at://")[1]}`
+        : null,
+      artistUri: data.artist_uri
+        ? `https://rocksky.app/${data.artist_uri.split("at://")[1]}`
+        : null,
+      isPlaying: data.is_playing,
+    });
   };
 
   const fetchSpotifyNowPlaying = async () => {
