@@ -81,7 +81,7 @@ function NowPlaying() {
   useEffect(() => {
     const interval = setInterval(() => {
       fetchNowPlaying();
-    }, 10000);
+    }, 15000);
     fetchNowPlaying();
     return () => clearInterval(interval);
   }, []);
@@ -91,18 +91,22 @@ function NowPlaying() {
       {song && (
         <div class="flex flex-row">
           {song?.albumUri && (
-            <a href={song.albumUri} target="_blank">
+            <a href={song.albumUri} target="_blank" class="mr-[20px]">
+              <div class="max-w-[96px] max-h-[96px]">
+                <img
+                  class="w-[96px] h-[96px] rounded-[10px]"
+                  src={song?.albumArt!}
+                />
+              </div>
+            </a>
+          )}
+          {!song?.albumUri && (
+            <div class="max-w-[96px] max-h-[96px] mr-[20px]">
               <img
                 class="w-[96px] h-[96px] rounded-[10px] mr-[20px]"
                 src={song?.albumArt!}
               />
-            </a>
-          )}
-          {!song?.albumUri && (
-            <img
-              class="w-[96px] h-[96px] rounded-[10px] mr-[20px]"
-              src={song?.albumArt!}
-            />
+            </div>
           )}
           <div>
             <p class="text-[16px] text-[rgb(109,109,156)]">
@@ -119,14 +123,14 @@ function NowPlaying() {
               {song?.songUri && (
                 <a
                   href={song?.songUri}
-                  class="text-[20px] line-clamp-1 overflow-hidden text-ellipsis max-w-[600px]"
+                  class="text-[20px] line-clamp-1 overflow-hidden text-ellipsis max-w-[240px] md:max-w-[630px]"
                   target="_blank"
                 >
                   {song?.title}
                 </a>
               )}
               {!song?.songUri && (
-                <p class="text-[20px] line-clamp-1 overflow-hidden text-ellipsis max-w-[600px]">
+                <p class="text-[20px] line-clamp-1 overflow-hidden text-ellipsis max-w-[240px] md:max-w-[630px]">
                   {song?.title}
                 </p>
               )}
@@ -135,14 +139,14 @@ function NowPlaying() {
               {song?.artistUri && (
                 <a
                   href={song?.artistUri}
-                  class="line-clamp-2 overflow-hidden text-ellipsis max-w-[600px]"
+                  class="line-clamp-1 overflow-hidden text-ellipsis max-w-[240px] md:max-w-[630px]"
                   target="_blank"
                 >
                   {song?.artist}
                 </a>
               )}
               {!song?.artistUri && (
-                <p class="line-clamp-2 overflow-hidden text-ellipsis max-w-[600px]">
+                <p class="line-clamp-1 overflow-hidden text-ellipsis max-w-[240px] md:max-w-[630px]">
                   {song?.artist}
                 </p>
               )}
