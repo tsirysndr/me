@@ -15,7 +15,9 @@ jobs:
         with:
           wasm: true
           plugin: deno
-          args: deploy main.tsx --project=$DENO_PROJECT
+          args: |
+            task build
+            deploy main.ts --project=$DENO_PROJECT
         env:
           DENO_PROJECT: ${{ secrets.DENO_PROJECT }}
           DENO_DEPLOY_TOKEN: ${{ secrets.DENO_DEPLOY_TOKEN }}
