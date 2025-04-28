@@ -23,9 +23,9 @@ export default function Home() {
             open source enthusiast
           </a>{" "}
           with over {dayjs().diff("2015-01-01", "year")}{" "}
-          years of experience in software engineering living in Antananarivo,
-          Madagascar. I like Rust, Deno, Bun, Gleam, TypeScript, ReScript and
-          PureScript. I build{" "}
+          years of experience in software engineering, living in Antananarivo,
+          Madagascar. I enjoy working with Rust, Deno, Bun, Gleam, TypeScript,
+          ReScript and PureScript. I build{" "}
           <a
             href="https://rocksky.app"
             class="text-[#ff5dae]"
@@ -68,7 +68,7 @@ export default function Home() {
           >
             Rockbox Zig
           </a>{" "}
-          and few other open source projects 🦀 🦕 🧑‍🔬 ❄️ 💻 🚀.
+          and a few other open source projects 🦀 🦕 🧑‍🔬 ❄️ 💻 🚀.
           <br />
           <br />
           Wanna talk about something? Send me a message on{" "}
