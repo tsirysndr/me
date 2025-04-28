@@ -21,3 +21,4 @@ jobs:
         env:
           DENO_PROJECT: ${{ secrets.DENO_PROJECT }}
           DENO_DEPLOY_TOKEN: ${{ secrets.DENO_DEPLOY_TOKEN }}
+          GA_TRACKING_ID: G-2LP61SRX58

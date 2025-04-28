@@ -9,11 +9,6 @@ export default function App({ Component }: PageProps) {
         <title>Tsiry Sandratraina</title>
         <link rel="stylesheet" href="/styles.css" />
       </head>
-      <script
-        async
-        src="https://www.googletagmanager.com/gtag/js?id=G-2LP61SRX58"
-      >
-      </script>
       <body>
         <Component />
       </body>
