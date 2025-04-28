@@ -166,7 +166,7 @@ function NowPlaying() {
     fetchLastPlayedSong();
     const interval = setInterval(() => {
       fetchNowPlaying();
-    }, 15000);
+    }, 3000);
     fetchNowPlaying();
     return () => clearInterval(interval);
   }, []);
