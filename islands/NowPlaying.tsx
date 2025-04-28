@@ -162,6 +162,7 @@ function NowPlaying() {
   }, []);
 
   useEffect(() => {
+    fetchLastPlayedSong();
     const interval = setInterval(() => {
       fetchNowPlaying();
     }, 15000);
