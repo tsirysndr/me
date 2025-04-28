@@ -70,6 +70,7 @@ function NowPlaying() {
     }
 
     setIsPlaying(true);
+    setLabel("Now Playing");
 
     setSong({
       title: data.item.name,
