@@ -54,6 +54,8 @@ function NowPlaying() {
         ? `https://rocksky.app/${data.artist_uri.split("at://")[1]}`
         : null,
       isPlaying: data.is_playing,
+      duration: data.length,
+      progress: data.elapsed,
     });
   };
 
