@@ -195,7 +195,7 @@ function NowPlaying() {
         <>
           <div class="flex flex-row">
             {song?.albumUri && (
-              <a href={song.albumUri} target="_blank" class="mr-[20px]">
+              <a href={song.albumUri.replace("app.rocksky.", "")} target="_blank" class="mr-[20px]">
                 <div class="max-w-[96px] max-h-[96px]">
                   <img
                     class="w-[96px] h-[96px] rounded-[10px]"
@@ -226,7 +226,7 @@ function NowPlaying() {
               <div>
                 {song?.songUri && (
                   <a
-                    href={song?.songUri}
+                    href={song?.songUri?.replace("app.rocksky.", "")}
                     class="text-[20px] line-clamp-1 overflow-hidden text-ellipsis max-w-[240px] md:max-w-[630px]"
                     target="_blank"
                   >
@@ -242,7 +242,7 @@ function NowPlaying() {
               <div>
                 {song?.artistUri && (
                   <a
-                    href={song?.artistUri}
+                    href={song?.artistUri?.replace("app.rocksky.", "")}
                     class="line-clamp-1 overflow-hidden text-ellipsis max-w-[240px] md:max-w-[630px]"
                     target="_blank"
                   >
