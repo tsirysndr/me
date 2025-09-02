@@ -41,18 +41,11 @@ export default function Home() {
             Fluent CI
           </a>,{" "}
           <a
-            href="https://github.com/pocketenv-io/pocketenv"
+            href="https://github.com/tsirysndr/oh-my-droid"
             class="text-[#ff5dae]"
             target="_blank"
           >
-            Pocketenv
-          </a>,{" "}
-          <a
-            href="https://github.com/tsirysndr/envhub"
-            class="text-[#ff5dae]"
-            target="_blank"
-          >
-            Envhub
+            Oh My Droid
           </a>,{" "}
           <a
             href="https://github.com/tsirysndr/tunein-cli"
