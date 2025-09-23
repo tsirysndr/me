@@ -27,7 +27,7 @@ export default function Home() {
           Madagascar. I enjoy working with Rust, Deno, Bun, Gleam, TypeScript,
           ReScript and PureScript. I build{" "}
           <a
-            href="https://rocksky.app"
+            href="https://tangled.org/@rocksky.app/rocksky"
             class="text-[#ff5dae]"
             target="_blank"
           >
