@@ -24,8 +24,8 @@
   pointer-events: none;
   inset: 72px 0 auto;
   height: clamp(600px, 65vw, 1000px);
-  background: url("/images/computer-glitch.png") center / cover no-repeat;
-  opacity: 0.28;
+  background: url("/images/unix-pixel-glitch.png") center / cover no-repeat;
+  opacity: 0.4;
   -webkit-mask-image: linear-gradient(
     to bottom,
     transparent,
