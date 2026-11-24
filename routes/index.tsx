@@ -54,7 +54,7 @@ export default function Home() {
           infrastructure, and decentralized applications. My{" "}
           <a
             href="https://github.com/tsirysndr"
-            class="text-[#ff6a00]"
+            class="text-[#ff2bd6]"
             target="_blank"
             rel="noopener noreferrer"
           >
@@ -63,7 +63,7 @@ export default function Home() {
           includes{" "}
           <a
             href="https://github.com/tsirysndr/bsdkrun"
-            class="text-[#ff6a00]"
+            class="text-[#ff2bd6]"
             target="_blank"
             rel="noopener noreferrer"
           >
@@ -71,7 +71,7 @@ export default function Home() {
           </a>, a microVM launcher;{" "}
           <a
             href="https://github.com/tsirysndr/dbsandbox"
-            class="text-[#ff6a00]"
+            class="text-[#ff2bd6]"
             target="_blank"
             rel="noopener noreferrer"
           >
@@ -79,7 +79,7 @@ export default function Home() {
           </a>, database branching and sandboxing tools;{" "}
           <a
             href="https://github.com/fluentci-io/fluentci"
-            class="text-[#ff6a00]"
+            class="text-[#ff2bd6]"
             target="_blank"
             rel="noopener noreferrer"
           >
@@ -87,7 +87,7 @@ export default function Home() {
           </a>, portable CI/CD tooling; and{" "}
           <a
             href="https://rocksky.app"
-            class="text-[#ff6a00]"
+            class="text-[#ff2bd6]"
             target="_blank"
             rel="noopener noreferrer"
           >
@@ -100,13 +100,13 @@ export default function Home() {
           Wanna talk about something? Send me a message on{" "}
           <a
             href="https://keybase.io/tsiry/chat"
-            class="text-[#ff6a00]"
+            class="text-[#ff2bd6]"
             target="_blank"
           >
             Keybase
           </a>{" "}
           or email me at{" "}
-          <a href="mailto:tsiry.sndr@rocksky.app" class="text-[#ff6a00]">
+          <a href="mailto:tsiry.sndr@rocksky.app" class="text-[#ff2bd6]">
             tsiry.sndr@rocksky.app
           </a>.
         </p>
