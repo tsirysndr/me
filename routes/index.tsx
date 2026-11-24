@@ -39,14 +39,14 @@ export default function Home() {
         </nav>
       </header>
       <div class="site-content">
-        <h2 class="font-medium mb-0 text-[28px]">
+        <h2 class="profile-copy font-medium mb-0 text-[28px]">
           Hello I'm
         </h2>
-        <h1 class="mb-[21.44px] text-4xl font-semibold mt-0">
+        <h1 class="profile-copy mb-[21.44px] text-4xl font-semibold mt-0">
           <AnimatedName />
           <b class="ml-[5px] animate-blinker text-[28px]">_</b>
         </h1>
-        <p class="text-[19px] mb-[40px]">
+        <p class="profile-copy text-[19px] mb-[40px]">
           I'm a software engineer based in Antananarivo, Madagascar, with over
           {" "}
           {dayjs().diff("2015-01-01", "year")}{" "}
@@ -92,9 +92,17 @@ export default function Home() {
             rel="noopener noreferrer"
           >
             Rocksky
-          </a>, a music platform built on the AT Protocol. I work with Rust,
-          TypeScript, Gleam, and PureScript to build tools that make
-          infrastructure and development workflows easier to run and understand.
+          </a>, a music platform built on the{" "}
+          <a
+            href="https://atproto.com"
+            class="text-[#ff2bd6]"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            AT Protocol
+          </a>. I work with Rust, TypeScript, Gleam, and PureScript to build
+          tools that make infrastructure and development workflows easier to run
+          and understand.
           <br />
           <br />
           Wanna talk about something? Send me a message on{" "}
