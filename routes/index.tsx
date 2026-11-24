@@ -7,6 +7,7 @@ import ThemeChooser from "../islands/ThemeChooser.tsx";
 import type { Handlers, PageProps } from "$fresh/server.ts";
 import { GitHubStars } from "../components/GitHubStars.tsx";
 import { getGitHubStars } from "../lib/github.ts";
+import { OpenSource } from "../components/OpenSource.tsx";
 
 interface HomeData {
   stars: number | null;
@@ -61,6 +62,9 @@ export default function Home({ data }: PageProps<HomeData>) {
             </a>
           </nav>
           <div class="topbar-actions">
+            <a class="projects-button" href="#open-source">
+              View More Projects
+            </a>
             <GitHubStars stars={data.stars} />
             <ThemeChooser />
           </div>
@@ -142,6 +146,7 @@ export default function Home({ data }: PageProps<HomeData>) {
           </p>
         </AsciiFrame>
         <NowPlaying />
+        <OpenSource />
         <Footer />
       </main>
     </div>

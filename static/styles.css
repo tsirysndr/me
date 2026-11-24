@@ -9,6 +9,7 @@
   --muted: #a1a1a1;
   --line: #303030;
   --surface: #191919;
+  --accent: #e879f9;
 }
 
 :root[data-theme="light"] {
@@ -18,6 +19,11 @@
   --muted: #666666;
   --line: #e5e5e5;
   --surface: #fafafa;
+  --accent: #c026d3;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 html,
@@ -91,7 +97,28 @@ a:hover {
 .topbar-actions {
   display: flex;
   align-items: center;
-  gap: 20px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.projects-button {
+  padding: 6px 12px;
+  border: 1px solid var(--accent);
+  border-radius: 3px;
+  color: var(--accent);
+  font-size: 11px;
+  line-height: 1.6;
+  white-space: nowrap;
+}
+
+.projects-button:hover {
+  color: var(--page);
+  background: var(--accent);
+  text-decoration: none;
+}
+
+.projects-button:focus-visible {
+  outline-color: var(--accent);
 }
 
 .github-stars {
@@ -320,6 +347,57 @@ a:hover {
   font-size: 11px;
 }
 
+.open-source {
+  margin-top: 48px;
+  scroll-margin-top: 32px;
+}
+
+.open-source-heading {
+  padding: 28px 32px 24px;
+}
+
+.open-source-heading h2 {
+  margin: 0 0 8px;
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.open-source-heading p {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.open-source-projects {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 0 1px 1px;
+}
+
+.open-source-projects li {
+  border-top: 1px solid var(--line);
+}
+
+.open-source-projects li:nth-child(odd) {
+  border-right: 1px solid var(--line);
+}
+
+.open-source-projects a {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 31px;
+  font-size: 13px;
+}
+
+.open-source-projects a:hover {
+  color: var(--accent);
+}
+
+.open-source-projects a:focus-visible {
+  outline-offset: -4px;
+}
+
 .footer-socials {
   display: flex;
   align-items: center;
@@ -356,9 +434,29 @@ a:hover {
   .profile-panel {
     padding: 24px 18px;
   }
+
+  .open-source-heading {
+    padding: 24px 18px;
+  }
+
+  .open-source-projects {
+    grid-template-columns: 1fr;
+  }
+
+  .open-source-projects li:nth-child(odd) {
+    border-right: 0;
+  }
+
+  .open-source-projects a {
+    padding: 16px 17px;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
   .name-cursor {
     animation: none;
   }
