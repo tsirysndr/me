@@ -369,8 +369,6 @@ a:hover {
 }
 
 .open-source-projects {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
   margin: 0 1px 1px;
 }
 
@@ -378,17 +376,11 @@ a:hover {
   border-top: 1px solid var(--line);
 }
 
-.open-source-projects li:nth-child(odd) {
-  border-right: 1px solid var(--line);
-}
-
 .open-source-projects a {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
+  display: block;
   padding: 18px 31px;
   font-size: 13px;
+  overflow-wrap: anywhere;
 }
 
 .open-source-projects a:hover {
@@ -438,14 +430,6 @@ a:hover {
 
   .open-source-heading {
     padding: 24px 18px;
-  }
-
-  .open-source-projects {
-    grid-template-columns: 1fr;
-  }
-
-  .open-source-projects li:nth-child(odd) {
-    border-right: 0;
   }
 
   .open-source-projects a {

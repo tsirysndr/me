@@ -27,8 +27,7 @@ export function OpenSource() {
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                <span>{name}</span>
-                <span aria-hidden="true">↗</span>
+                {`[${name}](https://github.com/tsirysndr/${name})`}
               </a>
             </li>
           ))}
