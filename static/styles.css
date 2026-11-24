@@ -1,132 +1,199 @@
-@import url("https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap");
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-@font-face {
-  font-family: "Caskaydia Code";
-  src: url("/fonts/CaskaydiaCoveNerdFontMono-Regular.ttf") format("truetype");
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
+:root {
+  color-scheme: light;
+  --page: #ffffff;
+  --text: #171717;
+  --muted: #666666;
+  --line: #e5e5e5;
+  --surface: #fafafa;
 }
 
-@font-face {
-  font-family: "Caskaydia Code";
-  src: url("/fonts/CaskaydiaCoveNerdFontMono-SemiBold.ttf") format("truetype");
-  font-style: normal;
-  font-weight: 600;
-  font-display: swap;
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --page: #111111;
+  --text: #ededed;
+  --muted: #a1a1a1;
+  --line: #303030;
+  --surface: #191919;
 }
 
 html,
 body {
   margin: 0;
   min-height: 100%;
-  background: #090512;
+  background: var(--page);
+  color: var(--text);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    "Liberation Mono", "Courier New", monospace;
+  font-size: 14px;
+  line-height: 1.8;
+}
+
+button,
+select {
+  font: inherit;
+}
+
+a {
+  text-underline-offset: 4px;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+:focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: 5px;
+}
+
+::selection {
+  color: var(--page);
+  background: var(--text);
 }
 
 .site-shell {
-  position: relative;
-  isolation: isolate;
   display: flex;
   flex-direction: column;
   min-height: 100vh;
   min-height: 100dvh;
-  overflow: clip;
-}
-
-.site-shell::before {
-  content: "";
-  position: absolute;
-  z-index: -1;
-  pointer-events: none;
-  inset: 72px 0 0;
-  background: url("/images/sun-sparcstation-terminal.png") right center / cover
-    no-repeat;
-  -webkit-mask-image: linear-gradient(
-    to bottom,
-    transparent,
-    #000 20%,
-    #000 70%,
-    transparent
-  );
-  mask-image: linear-gradient(
-    to bottom,
-    transparent,
-    #000 20%,
-    #000 70%,
-    transparent
-  );
-}
-
-.site-shell::after {
-  content: "";
-  position: absolute;
-  z-index: -1;
-  inset: 0;
-  pointer-events: none;
-  background: rgb(9 5 18 / 82%);
-}
-
-.site-content {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  width: min(100%, 744px);
-  margin: 0 auto;
-  padding: 23px 20px 0;
-}
-
-.site-footer {
-  margin-top: auto;
-  padding-top: 48px;
-  padding-bottom: 20px;
 }
 
 .project-topbar {
-  border-bottom: 1px solid rgb(0 245 255 / 18%);
+  border-bottom: 1px solid var(--line);
+}
+
+.topbar-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  width: min(100%, 960px);
+  margin: 0 auto;
+  padding: 20px 32px;
 }
 
 .project-topbar-links {
   display: flex;
   flex-wrap: wrap;
   gap: 12px 24px;
-  width: 100%;
-  max-width: 744px;
-  margin: 0 auto;
-  padding: 20px;
-  font-family: "Caskaydia Code", monospace;
-  font-size: 14px;
-  font-weight: 600;
-  color: #00f5ff;
+  font-size: 12px;
 }
 
 .project-topbar-links a {
   white-space: nowrap;
 }
 
-.project-topbar-links a:hover {
-  text-shadow: 0 0 12px rgb(0 245 255 / 65%);
-  text-decoration: underline;
-  text-underline-offset: 4px;
+.theme-chooser {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  border: 1px solid var(--line);
+  border-radius: 5px;
 }
 
-.project-topbar-links a:focus-visible {
-  outline: 2px solid currentColor;
-  outline-offset: 5px;
-  border-radius: 2px;
+.theme-chooser button {
+  padding: 3px 9px;
+  border-radius: 3px;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.6;
+  cursor: pointer;
+}
+
+.theme-chooser button[aria-pressed="true"] {
+  color: var(--page);
+  background: var(--text);
+}
+
+.site-content {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  width: min(100%, 960px);
+  margin: 0 auto;
+  padding: 64px 32px 0;
+}
+
+.profile-greeting {
+  margin-bottom: 12px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.profile-title {
+  margin: 0 0 32px;
+  font-size: clamp(24px, 4vw, 38px);
+  font-weight: 500;
+  letter-spacing: -0.06em;
+  line-height: 1.4;
+}
+
+.name-cursor {
+  margin-left: 4px;
+  color: var(--muted);
 }
 
 .profile-copy {
-  font-family: "Caskaydia Code", monospace;
+  max-width: 78ch;
+  margin-bottom: 0;
+  font-size: 14px;
+  line-height: 1.95;
+}
+
+.ascii-frame {
+  position: relative;
+  border: 1px solid var(--line);
+  border-top-style: dashed;
+  border-bottom-style: dashed;
+}
+
+.ascii-corners {
+  position: absolute;
+  display: flex;
+  justify-content: space-between;
+  left: -0.35em;
+  right: -0.35em;
+  height: 1em;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1;
+  pointer-events: none;
+}
+
+.ascii-corners span {
+  background: var(--page);
+}
+
+.ascii-top {
+  top: -0.5em;
+}
+
+.ascii-bottom {
+  bottom: -0.5em;
+}
+
+.profile-panel {
+  margin-bottom: 32px;
+  padding: 32px;
+}
+
+.profile-copy a {
+  text-decoration: underline;
+  text-decoration-color: var(--line);
+}
+
+.profile-copy a:hover {
+  text-decoration-color: currentColor;
 }
 
 .electric-name {
-  font-family: "Caskaydia Code", monospace;
-  color: #00f5ff;
-  text-shadow: 0 0 12px rgb(0 245 255 / 45%), 0 0 28px rgb(0 245 255 / 20%);
+  color: inherit;
 }
 
 .electric-name-word {
@@ -146,4 +213,129 @@ body {
   position: absolute;
   inset: 0;
   text-align: center;
+}
+
+.music-player {
+  max-width: 560px;
+  padding: 20px;
+  background: var(--page);
+}
+
+.music-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.music-artwork {
+  flex-shrink: 0;
+  width: 64px;
+  height: 64px;
+  object-fit: cover;
+  border-radius: 2px;
+}
+
+.music-details {
+  flex: 1;
+  min-width: 0;
+}
+
+.music-label,
+.music-artist,
+.music-time {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.music-title,
+.music-artist {
+  display: block;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.music-title {
+  margin: 2px 0;
+  font-size: 13px;
+}
+
+.music-progress {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.progress-track {
+  width: 100%;
+  height: 2px;
+  overflow: hidden;
+  background: var(--line);
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--text);
+  transition: width 0.3s linear;
+}
+
+.site-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 20px;
+  margin-top: auto;
+  padding: 56px 0 24px;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.footer-socials {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.social svg {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+}
+
+@media (max-width: 600px) {
+  .topbar-inner {
+    padding: 16px 20px;
+  }
+
+  .project-topbar-links {
+    gap: 10px 16px;
+  }
+
+  .site-content {
+    padding: 40px 20px 0;
+  }
+
+  .profile-title {
+    letter-spacing: -0.065em;
+  }
+
+  .music-player {
+    padding: 16px;
+  }
+
+  .profile-panel {
+    padding: 24px 18px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .name-cursor {
+    animation: none;
+  }
+
+  .progress-fill {
+    transition: none;
+  }
 }

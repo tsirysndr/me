@@ -2,11 +2,12 @@ import _ from "lodash";
 import { useCallback, useEffect, useRef, useState } from "preact/hooks";
 import { useTimeFormat } from "../hooks/useFormat.tsx";
 import Progressbar from "./Progressbar.tsx";
+import { AsciiFrame } from "../components/AsciiFrame.tsx";
 
 const did = "did:plc:7vdlgi2bflelz7mmuxoqjfcr";
 
 function NowPlaying() {
-  const progressInterval = useRef<number | null>(null);
+  const progressInterval = useRef<ReturnType<typeof setInterval> | null>(null);
   const [progress, setProgress] = useState(0);
   const { formatTime } = useTimeFormat();
   const [label, setLabel] = useState("Now Playing");
@@ -189,91 +190,81 @@ function NowPlaying() {
     isPlayingRef.current = isPlaying;
   }, [song, isPlaying]);
 
-  return (
-    <div>
-      {song && (
-        <>
-          <div class="flex flex-row">
-            {song?.albumUri && (
-              <a href={song.albumUri.replace("app.rocksky.", "")} target="_blank" class="mr-[20px]">
-                <div class="max-w-[96px] max-h-[96px]">
-                  <img
-                    class="w-[96px] h-[96px] rounded-[10px]"
-                    src={song?.albumArt!}
-                  />
-                </div>
-              </a>
-            )}
-            {!song?.albumUri && (
-              <div class="max-w-[96px] max-h-[96px] mr-[20px]">
+  return song && (
+    <AsciiFrame class="music-player">
+      <div class="music-row">
+        {song.albumArt && (
+          song.albumUri
+            ? (
+              <a
+                href={song.albumUri.replace("app.rocksky.", "")}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 <img
-                  class="w-[96px] h-[96px] rounded-[10px] mr-[20px]"
-                  src={song?.albumArt!}
+                  class="music-artwork"
+                  src={song.albumArt}
+                  alt={`${song.title} album artwork`}
+                  width="64"
+                  height="64"
                 />
-              </div>
-            )}
-            <div>
-              <p class="text-[16px] text-[rgb(109,109,156)]">
-                {label}
-                {" on "}
-                <a
-                  href={`https://rocksky.app/profile/tsiry-sandratraina.com`}
-                  target="_blank"
-                >
-                  <b>Rocksky</b>
-                </a>
-              </p>
-              <div>
-                {song?.songUri && (
-                  <a
-                    href={song?.songUri?.replace("app.rocksky.", "")}
-                    class="text-[20px] line-clamp-1 overflow-hidden text-ellipsis max-w-[240px] md:max-w-[630px]"
-                    target="_blank"
-                  >
-                    {song?.title}
-                  </a>
-                )}
-                {!song?.songUri && (
-                  <p class="text-[20px] line-clamp-1 overflow-hidden text-ellipsis max-w-[240px] md:max-w-[630px]">
-                    {song?.title}
-                  </p>
-                )}
-              </div>
-              <div>
-                {song?.artistUri && (
-                  <a
-                    href={song?.artistUri?.replace("app.rocksky.", "")}
-                    class="line-clamp-1 overflow-hidden text-ellipsis max-w-[240px] md:max-w-[630px]"
-                    target="_blank"
-                  >
-                    {song?.artist}
-                  </a>
-                )}
-                {!song?.artistUri && (
-                  <p class="line-clamp-1 overflow-hidden text-ellipsis max-w-[240px] md:max-w-[630px]">
-                    {song?.artist}
-                  </p>
-                )}
-              </div>
-            </div>
-          </div>
-          {isPlaying && (
-            <div class="flex flex-row justify-between mt-[15px]">
-              <span class="text-[rgb(109,109,156)] text-[16px]">
-                {formatTime(song?.progress || 0)}
-              </span>
-              <Progressbar
-                progress={progress}
-                class="mt-[10px] ml-[10px] mr-[10px]"
+              </a>
+            )
+            : (
+              <img
+                class="music-artwork"
+                src={song.albumArt}
+                alt={`${song.title} album artwork`}
+                width="64"
+                height="64"
               />
-              <span class="text-[rgb(109,109,156)] text-[16px]">
-                {formatTime(song?.duration || 0)}
-              </span>
-            </div>
-          )}
-        </>
+            )
+        )}
+        <div class="music-details">
+          <p class="music-label">
+            {label} on{" "}
+            <a
+              href="https://rocksky.app/profile/tsiry-sandratraina.com"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Rocksky ↗
+            </a>
+          </p>
+          {song.songUri
+            ? (
+              <a
+                class="music-title"
+                href={song.songUri.replace("app.rocksky.", "")}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {song.title}
+              </a>
+            )
+            : <p class="music-title">{song.title}</p>}
+          {song.artistUri
+            ? (
+              <a
+                class="music-artist"
+                href={song.artistUri.replace("app.rocksky.", "")}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {song.artist}
+              </a>
+            )
+            : <p class="music-artist">{song.artist}</p>}
+        </div>
+      </div>
+      {isPlaying && (
+        <div class="music-progress">
+          <span class="music-time">{formatTime(song.progress || 0)}</span>
+          <Progressbar progress={progress} />
+          <span class="music-time">{formatTime(song.duration || 0)}</span>
+        </div>
       )}
-    </div>
+    </AsciiFrame>
   );
 }
 

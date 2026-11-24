@@ -2,11 +2,11 @@ import dayjs from "dayjs";
 
 export function Footer() {
   return (
-    <div class="site-footer flex flex-row flex-wrap gap-4 justify-between">
-      <div class="text-[rgb(109,109,156)] text-[17px]">
+    <div class="site-footer">
+      <div class="footer-copyright">
         © {dayjs().format("YYYY")} Tsiry Sandratraina.
       </div>
-      <div class="flex flex-row justify-around w-[100px]">
+      <div class="footer-socials">
         <a href="https://github.com/tsirysndr" target="_blank" class="social">
           <svg
             viewBox="0 0 16 16"
@@ -14,7 +14,7 @@ export function Footer() {
             width="20"
             aria-hidden="true"
             focusable="false"
-            fill="rgb(109, 109, 156)"
+            fill="currentColor"
             xmlns="http://www.w3.org/2000/svg"
             class="StyledIconBase-sc-ea9ulj-0 hFaFXW"
           >
@@ -29,7 +29,7 @@ export function Footer() {
         >
           <svg fill="none" viewBox="0 0 64 57" width="21" height="21">
             <path
-              fill="rgb(109, 109, 156)"
+              fill="currentColor"
               d="M13.873 3.805C21.21 9.332 29.103 20.537 32 26.55v15.882c0-.338-.13.044-.41.867-1.512 4.456-7.418 21.847-20.923 7.944-7.111-7.32-3.819-14.64 9.125-16.85-7.405 1.264-15.73-.825-18.014-9.015C1.12 23.022 0 8.51 0 6.55 0-3.268 8.579-.182 13.873 3.805ZM50.127 3.805C42.79 9.332 34.897 20.537 32 26.55v15.882c0-.338.13.044.41.867 1.512 4.456 7.418 21.847 20.923 7.944 7.111-7.32 3.819-14.64-9.125-16.85 7.405 1.264 15.73-.825 18.014-9.015C62.88 23.022 64 8.51 64 6.55c0-9.818-8.578-6.732-13.873-2.745Z"
             >
             </path>
@@ -42,7 +42,7 @@ export function Footer() {
             width="21"
             aria-hidden="true"
             focusable="false"
-            fill="rgb(109, 109, 156)"
+            fill="currentColor"
             xmlns="http://www.w3.org/2000/svg"
             class="StyledIconBase-sc-ea9ulj-0 hFaFXW"
           >
@@ -61,13 +61,13 @@ export function Footer() {
             width="20"
             focusable="false"
             role="img"
-            fill="rgb(109, 109, 156)"
+            fill="currentColor"
             xmlns="http://www.w3.org/2000/svg"
             class="StyledIconBase-sc-ea9ulj-0 hRnJPC"
           >
             <title>LinkedinIn icon</title>
             <path
-              fill="rgb(109, 109, 156)"
+              fill="currentColor"
               d="M100.3 448H7.4V148.9h92.88zM53.79 108.1C24.09 108.1 0 83.5 0 53.8a53.79 53.79 0 0 1 107.6 0c0 29.7-24.1 54.3-53.79 54.3zM447.9 448h-92.68V302.4c0-34.7-.7-79.2-48.29-79.2-48.29 0-55.69 37.7-55.69 76.7V448h-92.78V148.9h89.08v40.8h1.3c12.4-23.5 42.69-48.3 87.88-48.3 94 0 111.3 61.9 111.3 142.3V448z"
             >
             </path>
