@@ -212,7 +212,12 @@ a:hover {
 }
 
 .profile-copy a:hover {
+  color: #c026d3;
   text-decoration-color: currentColor;
+}
+
+:root[data-theme="dark"] .profile-copy a:hover {
+  color: #e879f9;
 }
 
 .electric-name {
