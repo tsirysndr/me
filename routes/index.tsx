@@ -145,8 +145,8 @@ export default function Home({ data }: PageProps<HomeData>) {
             </a>.
           </p>
         </AsciiFrame>
-        <NowPlaying />
         <OpenSource />
+        <NowPlaying />
         <Footer />
       </main>
     </div>
