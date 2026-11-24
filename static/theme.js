@@ -1,6 +1,6 @@
 try {
   document.documentElement.dataset.theme =
-    localStorage.getItem("theme") === "dark" ? "dark" : "light";
+    localStorage.getItem("theme") === "light" ? "light" : "dark";
 } catch {
-  // Keep the default light theme if browser storage is unavailable.
+  // Keep the default dark theme if browser storage is unavailable.
 }

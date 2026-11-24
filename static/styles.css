@@ -3,21 +3,21 @@
 @tailwind utilities;
 
 :root {
-  color-scheme: light;
-  --page: #ffffff;
-  --text: #171717;
-  --muted: #666666;
-  --line: #e5e5e5;
-  --surface: #fafafa;
-}
-
-:root[data-theme="dark"] {
   color-scheme: dark;
   --page: #111111;
   --text: #ededed;
   --muted: #a1a1a1;
   --line: #303030;
   --surface: #191919;
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+  --page: #ffffff;
+  --text: #171717;
+  --muted: #666666;
+  --line: #e5e5e5;
+  --surface: #fafafa;
 }
 
 html,

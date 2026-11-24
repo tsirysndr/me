@@ -3,15 +3,15 @@ import { useEffect, useState } from "preact/hooks";
 type Theme = "light" | "dark";
 
 export default function ThemeChooser() {
-  const [theme, setTheme] = useState<Theme>("light");
+  const [theme, setTheme] = useState<Theme>("dark");
 
   useEffect(() => {
     setTheme(
-      document.documentElement.dataset.theme === "dark" ? "dark" : "light",
+      document.documentElement.dataset.theme === "light" ? "light" : "dark",
     );
     const sync = (event: StorageEvent) => {
       if (event.key !== "theme" && event.key !== null) return;
-      const next = event.newValue === "dark" ? "dark" : "light";
+      const next = event.newValue === "light" ? "light" : "dark";
       document.documentElement.dataset.theme = next;
       setTheme(next);
     };

@@ -32,7 +32,7 @@ export default function Home({ data }: PageProps<HomeData>) {
               [Rocksky]
             </a>
             <a
-              href="https://fluenci.io"
+              href="https://fluentci.io"
               target="_blank"
               rel="noopener noreferrer"
             >
