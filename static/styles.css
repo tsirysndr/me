@@ -164,36 +164,41 @@ a:hover {
   line-height: 1.95;
 }
 
-.ascii-frame {
+.dashed-box {
   position: relative;
-  border: 1px solid var(--line);
-  border-top-style: dashed;
-  border-bottom-style: dashed;
-}
-
-.ascii-corners {
-  position: absolute;
-  display: flex;
-  justify-content: space-between;
-  left: -0.35em;
-  right: -0.35em;
-  height: 1em;
-  color: var(--muted);
-  font-size: 14px;
-  line-height: 1;
-  pointer-events: none;
-}
-
-.ascii-corners span {
-  background: var(--page);
-}
-
-.ascii-top {
-  top: -0.5em;
-}
-
-.ascii-bottom {
-  bottom: -0.5em;
+  /* PlanetScale's dashed-box pattern: 12px dashes with 4px gaps. */
+  background-image:
+    repeating-linear-gradient(
+    0deg,
+    var(--text),
+    var(--text) 12px,
+    transparent 12px,
+    transparent 16px
+  ),
+    repeating-linear-gradient(
+    90deg,
+    var(--text),
+    var(--text) 12px,
+    transparent 12px,
+    transparent 16px
+  ),
+    repeating-linear-gradient(
+    180deg,
+    var(--text),
+    var(--text) 12px,
+    transparent 12px,
+    transparent 16px
+  ),
+    repeating-linear-gradient(
+    270deg,
+    var(--text),
+    var(--text) 12px,
+    transparent 12px,
+    transparent 16px
+  );
+  background-position: 0 0, 0 0, 100% 0, 0 100%;
+  background-repeat: no-repeat;
+  background-size: 1px 100%, 100% 1px, 1px 100%, 100% 1px;
 }
 
 .profile-panel {
@@ -236,7 +241,7 @@ a:hover {
 .music-player {
   max-width: 560px;
   padding: 20px;
-  background: var(--page);
+  background-color: var(--page);
 }
 
 .music-row {
