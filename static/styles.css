@@ -35,7 +35,7 @@ body {
   z-index: -1;
   pointer-events: none;
   inset: 72px 0 0;
-  background: url("/images/synthwave-unix-glitch.png") center / cover no-repeat;
+  background: url("/images/unix-terminal-logs.png") center / cover no-repeat;
   -webkit-mask-image: linear-gradient(
     to bottom,
     transparent,
@@ -58,7 +58,7 @@ body {
   z-index: -1;
   inset: 0;
   pointer-events: none;
-  background: rgb(9 5 18 / 70%);
+  background: rgb(9 5 18 / 82%);
 }
 
 .site-content {
