@@ -19,19 +19,24 @@ export function OpenSource() {
           <h2 id="open-source-title">Open Source</h2>
           <p>A selection of my most-starred projects on GitHub.</p>
         </div>
-        <ul class="open-source-projects">
-          {projects.map((name) => (
-            <li key={name}>
-              <a
-                href={`https://github.com/tsirysndr/${name}`}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                {`[${name}](https://github.com/tsirysndr/${name})`}
-              </a>
-            </li>
-          ))}
-        </ul>
+        <table class="open-source-projects">
+          <caption class="sr-only">Open source project repositories</caption>
+          <tbody>
+            {projects.map((name) => (
+              <tr key={name}>
+                <td class="dashed-box">
+                  <a
+                    href={`https://github.com/tsirysndr/${name}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {`[${name}](https://github.com/tsirysndr/${name})`}
+                  </a>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </AsciiFrame>
     </section>
   );
