@@ -50,7 +50,7 @@ export default function Home() {
           I'm a developer and{" "}
           <a
             href="https://github.com/tsirysndr"
-            class="text-[#b6ff00]"
+            class="text-[#bf5fff]"
             target="_blank"
           >
             open source enthusiast
@@ -61,35 +61,35 @@ export default function Home() {
           ReScript and PureScript. I build{" "}
           <a
             href="https://tangled.org/@rocksky.app/rocksky"
-            class="text-[#b6ff00]"
+            class="text-[#bf5fff]"
             target="_blank"
           >
             Rocksky
           </a>,{" "}
           <a
             href="https://github.com/fluentci-io/fluentci"
-            class="text-[#b6ff00]"
+            class="text-[#bf5fff]"
             target="_blank"
           >
             Fluent CI
           </a>,{" "}
           <a
             href="https://github.com/tsirysndr/oh-my-droid"
-            class="text-[#b6ff00]"
+            class="text-[#bf5fff]"
             target="_blank"
           >
             Oh My Droid
           </a>,{" "}
           <a
             href="https://github.com/tsirysndr/tunein-cli"
-            class="text-[#b6ff00]"
+            class="text-[#bf5fff]"
             target="_blank"
           >
             TuneIn CLI
           </a>,{" "}
           <a
             href="https://github.com/tsirysndr/rockbox-zig"
-            class="text-[#b6ff00]"
+            class="text-[#bf5fff]"
             target="_blank"
           >
             Rockbox Zig
@@ -100,13 +100,13 @@ export default function Home() {
           Wanna talk about something? Send me a message on{" "}
           <a
             href="https://keybase.io/tsiry/chat"
-            class="text-[#b6ff00]"
+            class="text-[#bf5fff]"
             target="_blank"
           >
             Keybase
           </a>{" "}
           or email me at{" "}
-          <a href="mailto:tsiry.sndr@rocksky.app" class="text-[#b6ff00]">
+          <a href="mailto:tsiry.sndr@rocksky.app" class="text-[#bf5fff]">
             tsiry.sndr@rocksky.app
           </a>.
         </p>
