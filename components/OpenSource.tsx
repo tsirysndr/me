@@ -3,10 +3,7 @@ import { AsciiFrame } from "./AsciiFrame.tsx";
 const projects = [
   "music-player",
   "tunein-cli",
-  "crosup",
   "piratebay",
-  "mvola-node",
-  "mada",
 ];
 
 export function OpenSource() {
