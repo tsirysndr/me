@@ -8,10 +8,34 @@ export default function Home() {
     <div className="bg-[#090512] min-h-screen w-full text-white font-outfit">
       <header class="project-topbar">
         <nav aria-label="Projects" class="project-topbar-links">
-          <a href="https://rocksky.app">[Rocksky]</a>
-          <a href="https://fluenci.io">[Fluent CI]</a>
-          <a href="https://github.com/tsirysndr/bsdkrun">[bsdkrun]</a>
-          <a href="https://github.com/tsirysndr/dbsandbox">[dbsandbox]</a>
+          <a
+            href="https://rocksky.app"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            [Rocksky]
+          </a>
+          <a
+            href="https://fluenci.io"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            [Fluent CI]
+          </a>
+          <a
+            href="https://github.com/tsirysndr/bsdkrun"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            [bsdkrun]
+          </a>
+          <a
+            href="https://github.com/tsirysndr/dbsandbox"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            [dbsandbox]
+          </a>
         </nav>
       </header>
       <div class="md:w-[704px] mx-auto pt-[23px] px-5 md:px-0">
