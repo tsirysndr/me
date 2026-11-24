@@ -52,6 +52,13 @@ export default function Home({ data }: PageProps<HomeData>) {
             >
               [dbsandbox]
             </a>
+            <a
+              href="https://github.com/tsirysndr/rockboxd"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              [rockboxd]
+            </a>
           </nav>
           <div class="topbar-actions">
             <GitHubStars stars={data.stars} />
