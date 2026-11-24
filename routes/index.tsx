@@ -47,54 +47,54 @@ export default function Home() {
           <b class="ml-[5px] animate-blinker text-[28px]">_</b>
         </h1>
         <p class="text-[19px] mb-[40px]">
-          I'm a developer and{" "}
+          I'm a software engineer based in Antananarivo, Madagascar, with over
+          {" "}
+          {dayjs().diff("2015-01-01", "year")}{" "}
+          years of experience. My work spans systems programming, developer
+          infrastructure, and decentralized applications. My{" "}
           <a
             href="https://github.com/tsirysndr"
             class="text-[#ff6a00]"
             target="_blank"
+            rel="noopener noreferrer"
           >
-            open source enthusiast
+            open-source work
           </a>{" "}
-          with over {dayjs().diff("2015-01-01", "year")}{" "}
-          years of experience in software engineering, living in Antananarivo,
-          Madagascar. I enjoy working with Rust, Deno, Bun, Gleam, TypeScript,
-          ReScript and PureScript. I build{" "}
+          includes{" "}
           <a
-            href="https://tangled.org/@rocksky.app/rocksky"
+            href="https://github.com/tsirysndr/bsdkrun"
             class="text-[#ff6a00]"
             target="_blank"
+            rel="noopener noreferrer"
           >
-            Rocksky
-          </a>,{" "}
+            bsdkrun
+          </a>, a microVM launcher;{" "}
+          <a
+            href="https://github.com/tsirysndr/dbsandbox"
+            class="text-[#ff6a00]"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            dbsandbox
+          </a>, database branching and sandboxing tools;{" "}
           <a
             href="https://github.com/fluentci-io/fluentci"
             class="text-[#ff6a00]"
             target="_blank"
+            rel="noopener noreferrer"
           >
             Fluent CI
-          </a>,{" "}
+          </a>, portable CI/CD tooling; and{" "}
           <a
-            href="https://github.com/tsirysndr/oh-my-droid"
+            href="https://rocksky.app"
             class="text-[#ff6a00]"
             target="_blank"
+            rel="noopener noreferrer"
           >
-            Oh My Droid
-          </a>,{" "}
-          <a
-            href="https://github.com/tsirysndr/tunein-cli"
-            class="text-[#ff6a00]"
-            target="_blank"
-          >
-            TuneIn CLI
-          </a>,{" "}
-          <a
-            href="https://github.com/tsirysndr/rockbox-zig"
-            class="text-[#ff6a00]"
-            target="_blank"
-          >
-            Rockbox Zig
-          </a>{" "}
-          and a few other open source projects 🦀 🦕 🧑‍🔬 ❄️ 💻 🚀.
+            Rocksky
+          </a>, a music platform built on the AT Protocol. I work with Rust,
+          TypeScript, Gleam, and PureScript to build tools that make
+          infrastructure and development workflows easier to run and understand.
           <br />
           <br />
           Wanna talk about something? Send me a message on{" "}
