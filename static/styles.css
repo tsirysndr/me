@@ -3,3 +3,70 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@font-face {
+  font-family: "Caskaydia Code";
+  src: url("/fonts/CaskaydiaCoveNerdFontMono-SemiBold.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+}
+
+.project-topbar {
+  border-bottom: 1px solid rgb(0 245 255 / 18%);
+}
+
+.project-topbar-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 24px;
+  width: 100%;
+  max-width: 744px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: "Caskaydia Code", monospace;
+  font-size: 14px;
+  font-weight: 600;
+  color: #00f5ff;
+}
+
+.project-topbar-links a {
+  white-space: nowrap;
+}
+
+.project-topbar-links a:hover {
+  text-shadow: 0 0 12px rgb(0 245 255 / 65%);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.project-topbar-links a:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 5px;
+  border-radius: 2px;
+}
+
+.electric-name {
+  font-family: "Caskaydia Code", monospace;
+  color: #00f5ff;
+  text-shadow: 0 0 12px rgb(0 245 255 / 45%), 0 0 28px rgb(0 245 255 / 20%);
+}
+
+.electric-name-word {
+  white-space: nowrap;
+}
+
+.electric-name-letter {
+  position: relative;
+  display: inline-block;
+}
+
+.electric-name-placeholder {
+  visibility: hidden;
+}
+
+.electric-name-glyph {
+  position: absolute;
+  inset: 0;
+  text-align: center;
+}

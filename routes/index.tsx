@@ -1,16 +1,25 @@
 import dayjs from "dayjs";
 import { Footer } from "../components/Footer.tsx";
 import NowPlaying from "../islands/NowPlaying.tsx";
+import AnimatedName from "../islands/AnimatedName.tsx";
 
 export default function Home() {
   return (
-    <div className="bg-[#1b0642] min-h-screen w-full text-white font-outfit">
+    <div className="bg-[#090512] min-h-screen w-full text-white font-outfit">
+      <header class="project-topbar">
+        <nav aria-label="Projects" class="project-topbar-links">
+          <a href="https://rocksky.app">[Rocksky]</a>
+          <a href="https://fluenci.io">[Fluent CI]</a>
+          <a href="https://github.com/tsirysndr/bsdkrun">[bsdkrun]</a>
+          <a href="https://github.com/tsirysndr/dbsandbox">[dbsandbox]</a>
+        </nav>
+      </header>
       <div class="md:w-[704px] mx-auto pt-[23px] px-5 md:px-0">
         <h2 class="font-medium mb-0 text-[28px]">
           Hello I'm
         </h2>
         <h1 class="mb-[21.44px] text-4xl font-semibold mt-0">
-          Tsiry Sandratraina
+          <AnimatedName />
           <b class="ml-[5px] animate-blinker text-[28px]">_</b>
         </h1>
         <p class="text-[19px] mb-[40px]">

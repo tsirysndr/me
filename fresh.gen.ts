@@ -7,6 +7,7 @@ import * as $_app from "./routes/_app.tsx";
 import * as $api_joke from "./routes/api/joke.ts";
 import * as $greet_name_ from "./routes/greet/[name].tsx";
 import * as $index from "./routes/index.tsx";
+import * as $AnimatedName from "./islands/AnimatedName.tsx";
 import * as $NowPlaying from "./islands/NowPlaying.tsx";
 import * as $Progressbar from "./islands/Progressbar.tsx";
 import type { Manifest } from "$fresh/server.ts";
@@ -20,6 +21,7 @@ const manifest = {
     "./routes/index.tsx": $index,
   },
   islands: {
+    "./islands/AnimatedName.tsx": $AnimatedName,
     "./islands/NowPlaying.tsx": $NowPlaying,
     "./islands/Progressbar.tsx": $Progressbar,
   },
