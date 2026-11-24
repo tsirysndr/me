@@ -12,9 +12,21 @@
   font-display: swap;
 }
 
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  background: #090512;
+}
+
 .site-shell {
   position: relative;
   isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: 100dvh;
+  overflow: clip;
 }
 
 .site-shell::before {
@@ -22,10 +34,8 @@
   position: absolute;
   z-index: -1;
   pointer-events: none;
-  inset: 72px 0 auto;
-  height: clamp(600px, 65vw, 1000px);
-  background: url("/images/unix-pixel-glitch.png") center / cover no-repeat;
-  opacity: 0.4;
+  inset: 72px 0 0;
+  background: url("/images/synthwave-unix-glitch.png") center / cover no-repeat;
   -webkit-mask-image: linear-gradient(
     to bottom,
     transparent,
@@ -40,6 +50,30 @@
     #000 70%,
     transparent
   );
+}
+
+.site-shell::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  pointer-events: none;
+  background: rgb(9 5 18 / 70%);
+}
+
+.site-content {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  width: min(100%, 744px);
+  margin: 0 auto;
+  padding: 23px 20px 0;
+}
+
+.site-footer {
+  margin-top: auto;
+  padding-top: 48px;
+  padding-bottom: 20px;
 }
 
 .project-topbar {

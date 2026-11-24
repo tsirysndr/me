@@ -38,7 +38,7 @@ export default function Home() {
           </a>
         </nav>
       </header>
-      <div class="md:w-[704px] mx-auto pt-[23px] px-5 md:px-0">
+      <div class="site-content">
         <h2 class="font-medium mb-0 text-[28px]">
           Hello I'm
         </h2>

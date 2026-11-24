@@ -2,7 +2,7 @@ import dayjs from "dayjs";
 
 export function Footer() {
   return (
-    <div class="flex flex-row justify-between mb-[20px] mt-[100px]">
+    <div class="site-footer flex flex-row flex-wrap gap-4 justify-between">
       <div class="text-[rgb(109,109,156)] text-[17px]">
         © {dayjs().format("YYYY")} Tsiry Sandratraina.
       </div>
