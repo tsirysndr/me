@@ -4,8 +4,21 @@ import { Footer } from "../components/Footer.tsx";
 import NowPlaying from "../islands/NowPlaying.tsx";
 import AnimatedName from "../islands/AnimatedName.tsx";
 import ThemeChooser from "../islands/ThemeChooser.tsx";
+import type { Handlers, PageProps } from "$fresh/server.ts";
+import { GitHubStars } from "../components/GitHubStars.tsx";
+import { getGitHubStars } from "../lib/github.ts";
 
-export default function Home() {
+interface HomeData {
+  stars: number | null;
+}
+
+export const handler: Handlers<HomeData> = {
+  async GET(_request, context) {
+    return context.render({ stars: await getGitHubStars() });
+  },
+};
+
+export default function Home({ data }: PageProps<HomeData>) {
   return (
     <div class="site-shell">
       <header class="project-topbar">
@@ -16,31 +29,34 @@ export default function Home() {
               target="_blank"
               rel="noopener noreferrer"
             >
-              Rocksky
+              [Rocksky]
             </a>
             <a
               href="https://fluenci.io"
               target="_blank"
               rel="noopener noreferrer"
             >
-              Fluent CI
+              [Fluent CI]
             </a>
             <a
               href="https://github.com/tsirysndr/bsdkrun"
               target="_blank"
               rel="noopener noreferrer"
             >
-              bsdkrun
+              [bsdkrun]
             </a>
             <a
               href="https://github.com/tsirysndr/dbsandbox"
               target="_blank"
               rel="noopener noreferrer"
             >
-              dbsandbox
+              [dbsandbox]
             </a>
           </nav>
-          <ThemeChooser />
+          <div class="topbar-actions">
+            <GitHubStars stars={data.stars} />
+            <ThemeChooser />
+          </div>
         </div>
       </header>
       <main class="site-content">

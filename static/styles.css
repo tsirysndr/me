@@ -88,6 +88,24 @@ a:hover {
   white-space: nowrap;
 }
 
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.github-stars {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.github-stars span {
+  font-variant-numeric: tabular-nums;
+}
+
 .theme-chooser {
   display: flex;
   align-items: center;
