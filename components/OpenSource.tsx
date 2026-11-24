@@ -1,6 +1,7 @@
 import { AsciiFrame } from "./AsciiFrame.tsx";
 
 const projects = [
+  { name: "bsdkrun", url: "https://github.com/tsirysndr/bsdkrun" },
   { name: "music-player", url: "https://github.com/tsirysndr/music-player" },
   { name: "tunein-cli", url: "https://github.com/tsirysndr/tunein-cli" },
   { name: "piratebay", url: "https://github.com/tsirysndr/piratebay" },
