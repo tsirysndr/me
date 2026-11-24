@@ -35,7 +35,8 @@ body {
   z-index: -1;
   pointer-events: none;
   inset: 72px 0 0;
-  background: url("/images/unix-terminal-logs.png") center / cover no-repeat;
+  background: url("/images/tilted-crt-terminal.png") right center / cover
+    no-repeat;
   -webkit-mask-image: linear-gradient(
     to bottom,
     transparent,
