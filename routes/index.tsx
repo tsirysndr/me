@@ -5,7 +5,7 @@ import AnimatedName from "../islands/AnimatedName.tsx";
 
 export default function Home() {
   return (
-    <div className="bg-[#090512] min-h-screen w-full text-white font-outfit">
+    <div className="site-shell bg-[#090512] min-h-screen w-full text-white font-outfit">
       <header class="project-topbar">
         <nav aria-label="Projects" class="project-topbar-links">
           <a

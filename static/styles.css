@@ -12,6 +12,36 @@
   font-display: swap;
 }
 
+.site-shell {
+  position: relative;
+  isolation: isolate;
+}
+
+.site-shell::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  pointer-events: none;
+  inset: 72px 0 auto;
+  height: clamp(600px, 65vw, 1000px);
+  background: url("/images/computer-glitch.png") center / cover no-repeat;
+  opacity: 0.28;
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent,
+    #000 20%,
+    #000 70%,
+    transparent
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    transparent,
+    #000 20%,
+    #000 70%,
+    transparent
+  );
+}
+
 .project-topbar {
   border-bottom: 1px solid rgb(0 245 255 / 18%);
 }
