@@ -537,6 +537,10 @@ a:hover {
 }
 
 @media (max-width: 600px) {
+  .music-format {
+    display: none;
+  }
+
   .topbar-inner {
     padding: 16px 20px;
   }
