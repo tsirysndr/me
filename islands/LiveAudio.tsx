@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "preact/hooks";
 
 import { MAX_DB, MIN_DB, STEP_DB, volumeDbToGain } from "../lib/liveAudio.ts";
+import { AudioEqualizer } from "../components/AudioEqualizer.tsx";
 
 export default function LiveAudio() {
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -165,6 +166,7 @@ export default function LiveAudio() {
             <path d="M7.76 7.76a6 6 0 0 0 0 8.48m8.48-8.48a6 6 0 0 1 0 8.48M4.93 4.93a10 10 0 0 0 0 14.14M19.07 4.93a10 10 0 0 1 0 14.14" />
           </svg>
           Live
+          <AudioEqualizer audioRef={audioRef} />
         </span>
       )}
       <button

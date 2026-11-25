@@ -362,6 +362,27 @@ a:hover {
   font-size: 16px;
 }
 
+.live-eq {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 16px;
+  margin-left: 3px;
+}
+
+.live-eq[hidden] {
+  display: none;
+}
+
+.live-eq > span {
+  width: 3px;
+  height: 100%;
+  background: #fff;
+  transform: scaleY(0.1);
+  transform-origin: bottom;
+  transition: transform 65ms linear;
+}
+
 .live-volume button:hover:not(:disabled) {
   color: var(--accent);
 }
@@ -532,7 +553,8 @@ a:hover {
     animation: none;
   }
 
-  .progress-fill {
+  .progress-fill,
+  .live-eq > span {
     transition: none;
   }
 }
