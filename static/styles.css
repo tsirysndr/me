@@ -314,12 +314,12 @@ a:hover {
 .music-format {
   margin-left: auto;
   max-width: 100%;
-  color: #ffe600;
+  color: #00ffd5;
   text-align: right;
 }
 
 :root[data-theme="light"] .music-format {
-  color: #8a6d00;
+  color: #00796b;
 }
 
 .music-label-row {
