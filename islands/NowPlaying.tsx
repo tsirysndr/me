@@ -201,6 +201,7 @@ function NowPlaying() {
           song.albumUri
             ? (
               <a
+                class="music-artwork-link"
                 href={song.albumUri.replace("app.rocksky.", "")}
                 target="_blank"
                 rel="noopener noreferrer"
@@ -259,27 +260,27 @@ function NowPlaying() {
               </a>
             )
             : <p class="music-artist">{song.artist}</p>}
-          {song.deviceName && (
-            <p class="music-device">
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.5"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                aria-hidden="true"
-              >
-                <path d="M11 5 6 9H3v6h3l5 4V5Z" />
-                <path d="M15 8a6 6 0 0 1 0 8M18 5a10 10 0 0 1 0 14" />
-              </svg>
-              <span class="sr-only">Playback device:</span>
-              <span>{song.deviceName}</span>
-            </p>
-          )}
         </div>
+        {song.deviceName && (
+          <p class="music-device">
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M11 5 6 9H3v6h3l5 4V5Z" />
+              <path d="M15 8a6 6 0 0 1 0 8M18 5a10 10 0 0 1 0 14" />
+            </svg>
+            <span class="sr-only">Playback device:</span>
+            <span>{song.deviceName}</span>
+          </p>
+        )}
       </div>
       {isPlaying && (
         <div class="music-progress">
