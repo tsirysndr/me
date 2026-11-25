@@ -5,6 +5,7 @@ import { MAX_DB, MIN_DB, STEP_DB, volumeDbToGain } from "../lib/liveAudio.ts";
 export default function LiveAudio() {
   const audioRef = useRef<HTMLAudioElement>(null);
   const [decibels, setDecibels] = useState(MIN_DB);
+  const [available, setAvailable] = useState(false);
   const [status, setStatus] = useState(
     "Live audio starts muted. Increase volume to listen.",
   );
@@ -17,6 +18,14 @@ export default function LiveAudio() {
     let destroy: (() => void) | undefined;
     audio.volume = 0;
     audio.muted = true;
+    const markAvailable = () => {
+      if (!disposed) setAvailable(true);
+    };
+    const markUnavailable = () => {
+      if (!disposed) setAvailable(false);
+    };
+    audio.addEventListener("canplay", markAvailable);
+    audio.addEventListener("error", markUnavailable);
     const play = () =>
       audio.play().catch(() => {
         if (!disposed) setStatus("Increase volume to start live audio.");
@@ -50,10 +59,13 @@ export default function LiveAudio() {
         const hls = new Hls({ liveSyncDurationCount: 3, backBufferLength: 0 });
         destroy = () => hls.destroy();
         hls.on(Hls.Events.MANIFEST_PARSED, () => {
+          markAvailable();
           void play();
         });
+        hls.on(Hls.Events.FRAG_BUFFERED, markAvailable);
         hls.on(Hls.Events.ERROR, (_event, data) => {
           if (!data.fatal || disposed) return;
+          markUnavailable();
           setStatus("Live audio is reconnecting.");
           if (data.type === Hls.ErrorTypes.NETWORK_ERROR) {
             clearTimeout(retry);
@@ -75,6 +87,8 @@ export default function LiveAudio() {
     void connect();
     return () => {
       disposed = true;
+      audio.removeEventListener("canplay", markAvailable);
+      audio.removeEventListener("error", markUnavailable);
       clearTimeout(retry);
       destroy?.();
       audio.pause();
@@ -130,6 +144,29 @@ export default function LiveAudio() {
   return (
     <div class="live-volume" role="group" aria-label="Live stream volume">
       <audio ref={audioRef} autoPlay muted playsInline preload="auto" />
+      {available && (
+        <span
+          class="live-indicator"
+          role="status"
+          aria-label="Live stream available"
+          title="Live stream available"
+        >
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+            aria-hidden="true"
+          >
+            <circle cx="12" cy="12" r="2" fill="currentColor" stroke="none" />
+            <path d="M7.76 7.76a6 6 0 0 0 0 8.48m8.48-8.48a6 6 0 0 1 0 8.48M4.93 4.93a10 10 0 0 0 0 14.14M19.07 4.93a10 10 0 0 1 0 14.14" />
+          </svg>
+          Live
+        </span>
+      )}
       <button
         type="button"
         aria-label="Decrease live volume by 3 dB"

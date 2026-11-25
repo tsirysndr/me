@@ -345,6 +345,16 @@ a:hover {
   display: none;
 }
 
+.live-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-right: 6px;
+  color: var(--accent);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
 .live-volume button {
   width: 28px;
   height: 28px;
