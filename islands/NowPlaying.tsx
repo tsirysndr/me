@@ -285,7 +285,8 @@ function NowPlaying() {
                 Rocksky ↗
               </a>
             </p>
-            {song.audioFormat && (
+            {canStreamFromDevice(song.deviceName) && liveAvailable &&
+              song.audioFormat && (
               <p
                 class="music-format"
                 title="Source audio format"
