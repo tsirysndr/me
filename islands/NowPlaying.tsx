@@ -5,10 +5,13 @@ import Progressbar from "./Progressbar.tsx";
 import { AsciiFrame } from "../components/AsciiFrame.tsx";
 import LiveAudio from "./LiveAudio.tsx";
 import { canStreamFromDevice } from "../lib/liveAudio.ts";
+import { AudioEqualizer } from "../components/AudioEqualizer.tsx";
 
 const did = "did:plc:7vdlgi2bflelz7mmuxoqjfcr";
 
 function NowPlaying() {
+  const audioRef = useRef<HTMLAudioElement>(null);
+  const [liveAvailable, setLiveAvailable] = useState(false);
   const progressInterval = useRef<ReturnType<typeof setInterval> | null>(null);
   const [progress, setProgress] = useState(0);
   const { formatTime } = useTimeFormat();
@@ -223,9 +226,18 @@ function NowPlaying() {
             </svg>
             <span class="sr-only">Playback device:</span>
             <span>{song.deviceName}</span>
+            {canStreamFromDevice(song.deviceName) && liveAvailable && (
+              <AudioEqualizer audioRef={audioRef} />
+            )}
           </p>
         )}
-        {canStreamFromDevice(song.deviceName) && <LiveAudio />}
+        {canStreamFromDevice(song.deviceName) && (
+          <LiveAudio
+            audioRef={audioRef}
+            available={liveAvailable}
+            setAvailable={setLiveAvailable}
+          />
+        )}
       </div>
       <div class="music-row">
         {song.albumArt && (

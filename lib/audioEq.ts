@@ -11,12 +11,19 @@ export function audioEqLevels(
     const first = Math.ceil(low / binWidth);
     const end = Math.min(spectrum.length, Math.ceil(high / binWidth));
     let power = 0;
+    let peak = 0;
     for (let bin = first; bin < end; bin++) {
       const db = spectrum[bin];
-      if (Number.isFinite(db)) power += 10 ** (db / 10);
+      if (Number.isFinite(db)) {
+        const value = 10 ** (db / 10);
+        power += value;
+        peak = Math.max(peak, value);
+      }
     }
     if (!power || end <= first) return 0;
-    const db = 10 * Math.log10(power / (end - first));
-    return Math.max(0, Math.min(1, (db + 75) / 55));
+    // Blend average energy with spectral peaks so short percussion and
+    // narrow melodic notes remain visible instead of being averaged away.
+    const db = 10 * Math.log10(0.6 * power / (end - first) + 0.4 * peak);
+    return Math.max(0, Math.min(1, (db + 70) / 60));
   });
 }

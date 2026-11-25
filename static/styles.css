@@ -366,8 +366,14 @@ a:hover {
   display: inline-flex;
   align-items: flex-end;
   gap: 2px;
-  height: 16px;
+  height: 20px;
   margin-left: 3px;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+[data-theme="light"] .live-eq {
+  color: var(--text);
 }
 
 .live-eq[hidden] {
@@ -377,10 +383,10 @@ a:hover {
 .live-eq > span {
   width: 3px;
   height: 100%;
-  background: #fff;
+  background: currentColor;
   transform: scaleY(0.1);
   transform-origin: bottom;
-  transition: transform 65ms linear;
+  transition: transform 25ms linear;
 }
 
 .live-volume button:hover:not(:disabled) {

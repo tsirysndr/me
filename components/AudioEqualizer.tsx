@@ -26,6 +26,8 @@ export function AudioEqualizer(
     let track: MediaStreamTrack | undefined;
     let spectrum: Float32Array<ArrayBuffer> | undefined;
     let frame = 0;
+    let lastDraw = 0;
+    const displayLevels = [0, 0, 0];
     let disposed = false;
     const events = new AbortController();
     const options = { signal: events.signal };
@@ -33,11 +35,13 @@ export function AudioEqualizer(
     const stop = () => {
       cancelAnimationFrame(frame);
       frame = 0;
+      lastDraw = 0;
+      displayLevels.fill(0);
       root.hidden = true;
       bars.forEach((bar) => bar.style.transform = "scaleY(0.1)");
     };
 
-    const draw = () => {
+    const draw = (time: number) => {
       frame = 0;
       if (
         disposed || !context || !analyser || !spectrum || !source ||
@@ -54,8 +58,17 @@ export function AudioEqualizer(
         analyser.fftSize,
       );
       root.hidden = false;
+      const decay = Math.exp(-Math.min(time - lastDraw, 100) / 110);
+      lastDraw = time;
       levels.forEach((level, index) => {
-        bars[index].style.transform = `scaleY(${0.1 + 0.9 * level})`;
+        // Peaks rise immediately; release follows elapsed time, so the meter
+        // responds equally on 60 Hz and 120 Hz screens.
+        displayLevels[index] = level >= displayLevels[index]
+          ? level
+          : level + (displayLevels[index] - level) * decay;
+        bars[index].style.transform = `scaleY(${
+          0.08 + 0.92 * displayLevels[index]
+        })`;
       });
       frame = requestAnimationFrame(draw);
     };
@@ -84,7 +97,7 @@ export function AudioEqualizer(
           context = new AudioContext();
           analyser = context.createAnalyser();
           analyser.fftSize = 2048;
-          analyser.smoothingTimeConstant = 0.65;
+          analyser.smoothingTimeConstant = 0.15;
           spectrum = new Float32Array(analyser.frequencyBinCount);
           stream.addEventListener("addtrack", start, options);
           stream.addEventListener("removetrack", start, options);
@@ -98,7 +111,7 @@ export function AudioEqualizer(
           // Browser autoplay policies may require a click/key before analysis.
           void context.resume().catch(() => {});
         }
-        if (!frame) draw();
+        if (!frame) draw(performance.now());
       } catch {
         // Unsupported analysis must never interrupt the original audio.
         stop();
