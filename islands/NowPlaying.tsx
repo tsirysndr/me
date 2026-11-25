@@ -23,6 +23,7 @@ function NowPlaying() {
       duration?: number;
       progress?: number;
       isPlaying?: boolean;
+      deviceName?: string | null;
     } | null
   >(null);
   const songRef = useRef(song);
@@ -57,6 +58,9 @@ function NowPlaying() {
       isPlaying: data.is_playing,
       duration: data.length,
       progress: data.elapsed,
+      deviceName: typeof data.device_name === "string"
+        ? data.device_name.trim() || null
+        : null,
     });
   };
 
@@ -255,6 +259,26 @@ function NowPlaying() {
               </a>
             )
             : <p class="music-artist">{song.artist}</p>}
+          {song.deviceName && (
+            <p class="music-device">
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <rect x="3" y="4" width="18" height="12" rx="2" />
+                <path d="M8 20h8M12 16v4" />
+              </svg>
+              <span class="sr-only">Playback device:</span>
+              <span>{song.deviceName}</span>
+            </p>
+          )}
         </div>
       </div>
       {isPlaying && (

@@ -317,6 +317,20 @@ a:hover {
   font-size: 13px;
 }
 
+.music-device {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 11px;
+  overflow-wrap: anywhere;
+}
+
+.music-device svg {
+  flex-shrink: 0;
+}
+
 .music-progress {
   display: flex;
   align-items: center;
