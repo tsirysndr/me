@@ -399,13 +399,12 @@ a:hover {
 }
 
 .open-source-projects td {
-  padding: 0;
+  padding: 18px 31px;
   background-size: 0 0, 100% 1px, 0 0, 0 0;
 }
 
 .open-source-projects a {
   display: block;
-  padding: 18px 31px;
   font-size: 13px;
   overflow-wrap: anywhere;
 }
@@ -415,7 +414,14 @@ a:hover {
 }
 
 .open-source-projects a:focus-visible {
-  outline-offset: -4px;
+  outline-offset: 4px;
+}
+
+.project-description {
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.7;
 }
 
 .footer-socials {
@@ -459,7 +465,7 @@ a:hover {
     padding: 24px 18px;
   }
 
-  .open-source-projects a {
+  .open-source-projects td {
     padding: 16px 17px;
   }
 }
