@@ -21,6 +21,7 @@
     "**/_fresh/*"
   ],
   "imports": {
+    "hls.js": "npm:hls.js@1.7.4",
     "$fresh/": "https://deno.land/x/fresh@1.7.3/",
     "dayjs": "npm:dayjs@^1.11.13",
     "lodash": "npm:lodash@^4.17.21",

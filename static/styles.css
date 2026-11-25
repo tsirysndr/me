@@ -323,12 +323,55 @@ a:hover {
   font-size: 13px;
 }
 
+.music-player-tools {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin-bottom: 12px;
+}
+
+.live-volume {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.live-volume audio {
+  display: none;
+}
+
+.live-volume button {
+  width: 28px;
+  height: 28px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.live-volume button:hover:not(:disabled) {
+  color: var(--accent);
+}
+
+.live-volume button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.live-volume output {
+  min-width: 9ch;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
 .music-device {
   display: flex;
   align-items: center;
   justify-content: flex-start;
   gap: 6px;
-  margin-bottom: 12px;
   color: var(--muted);
   font-size: 11px;
   text-align: left;

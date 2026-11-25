@@ -8,6 +8,7 @@ import * as $api_joke from "./routes/api/joke.ts";
 import * as $greet_name_ from "./routes/greet/[name].tsx";
 import * as $index from "./routes/index.tsx";
 import * as $AnimatedName from "./islands/AnimatedName.tsx";
+import * as $LiveAudio from "./islands/LiveAudio.tsx";
 import * as $NowPlaying from "./islands/NowPlaying.tsx";
 import * as $Progressbar from "./islands/Progressbar.tsx";
 import * as $ThemeChooser from "./islands/ThemeChooser.tsx";
@@ -23,6 +24,7 @@ const manifest = {
   },
   islands: {
     "./islands/AnimatedName.tsx": $AnimatedName,
+    "./islands/LiveAudio.tsx": $LiveAudio,
     "./islands/NowPlaying.tsx": $NowPlaying,
     "./islands/Progressbar.tsx": $Progressbar,
     "./islands/ThemeChooser.tsx": $ThemeChooser,

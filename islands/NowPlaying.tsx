@@ -3,6 +3,8 @@ import { useCallback, useEffect, useRef, useState } from "preact/hooks";
 import { useTimeFormat } from "../hooks/useFormat.tsx";
 import Progressbar from "./Progressbar.tsx";
 import { AsciiFrame } from "../components/AsciiFrame.tsx";
+import LiveAudio from "./LiveAudio.tsx";
+import { canStreamFromDevice } from "../lib/liveAudio.ts";
 
 const did = "did:plc:7vdlgi2bflelz7mmuxoqjfcr";
 
@@ -170,7 +172,6 @@ function NowPlaying() {
   }, []);
 
   useEffect(() => {
-    fetchLastPlayedSong();
     const interval = setInterval(() => {
       fetchNowPlaying();
     }, 3000);
@@ -196,33 +197,36 @@ function NowPlaying() {
 
   return song && (
     <AsciiFrame class="music-player">
-      {song.deviceName && (
-        <p class="music-device">
-          <svg
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.5"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            aria-hidden="true"
-          >
-            <rect x="3" y="3" width="18" height="18" rx="2" />
-            <circle cx="12" cy="14" r="4" />
-            <circle
-              cx="12"
-              cy="7"
-              r="0.75"
-              fill="currentColor"
-              stroke="none"
-            />
-          </svg>
-          <span class="sr-only">Playback device:</span>
-          <span>{song.deviceName}</span>
-        </p>
-      )}
+      <div class="music-player-tools">
+        {song.deviceName && (
+          <p class="music-device">
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <rect x="3" y="3" width="18" height="18" rx="2" />
+              <circle cx="12" cy="14" r="4" />
+              <circle
+                cx="12"
+                cy="7"
+                r="0.75"
+                fill="currentColor"
+                stroke="none"
+              />
+            </svg>
+            <span class="sr-only">Playback device:</span>
+            <span>{song.deviceName}</span>
+          </p>
+        )}
+        {canStreamFromDevice(song.deviceName) && <LiveAudio />}
+      </div>
       <div class="music-row">
         {song.albumArt && (
           song.albumUri
