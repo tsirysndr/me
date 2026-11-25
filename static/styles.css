@@ -305,9 +305,14 @@ a:hover {
 
 .music-label,
 .music-artist,
+.music-format,
 .music-time {
   color: var(--muted);
   font-size: 11px;
+}
+
+.music-format {
+  margin-top: 4px;
 }
 
 .music-title,

@@ -6,6 +6,7 @@ import { AsciiFrame } from "../components/AsciiFrame.tsx";
 import LiveAudio from "./LiveAudio.tsx";
 import { canStreamFromDevice } from "../lib/liveAudio.ts";
 import { AudioEqualizer } from "../components/AudioEqualizer.tsx";
+import { formatAudioDetails } from "../lib/audioFormat.ts";
 
 const did = "did:plc:7vdlgi2bflelz7mmuxoqjfcr";
 
@@ -29,6 +30,7 @@ function NowPlaying() {
       progress?: number;
       isPlaying?: boolean;
       deviceName?: string | null;
+      audioFormat?: string;
     } | null
   >(null);
   const songRef = useRef(song);
@@ -66,6 +68,7 @@ function NowPlaying() {
       deviceName: typeof data.device_name === "string"
         ? data.device_name.trim() || null
         : null,
+      audioFormat: formatAudioDetails(data),
     });
   };
 
@@ -101,6 +104,7 @@ function NowPlaying() {
         ? `https://rocksky.app/${data.artistUri.split("at://")[1]}`
         : null,
       isPlaying: data.is_playing,
+      audioFormat: formatAudioDetails(data),
     });
   };
 
@@ -115,6 +119,7 @@ function NowPlaying() {
     setSong({
       title: data[0].title,
       artist: data[0].artist,
+      audioFormat: formatAudioDetails(data[0]),
       albumArt: data[0].album_art,
       albumUri: data[0].album_uri
         ? `https://rocksky.app/${data[0].album_uri.split("at://")[1]}`
@@ -303,6 +308,15 @@ function NowPlaying() {
               </a>
             )
             : <p class="music-artist">{song.artist}</p>}
+          {song.audioFormat && (
+            <p
+              class="music-format"
+              title="Source audio format"
+              aria-label={`Source audio format: ${song.audioFormat}`}
+            >
+              {song.audioFormat}
+            </p>
+          )}
         </div>
       </div>
       {isPlaying && (
