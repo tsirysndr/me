@@ -1,3 +1,0 @@
-Generated with the built-in imagegen tool.
-
-Create a wide landscape computer-glitch background texture for a developer's personal website. Abstract corrupted terminal display, horizontal digital tearing, fragmented pixel blocks, fine CRT scanlines and signal noise. Near-black purple (#090512) dominates, with restrained electric cyan and small electric orange highlights. Atmospheric, sophisticated, dark and low contrast, plenty of quiet negative space across the center for readable foreground text. Detail concentrated toward left and right edges and in a middle horizontal band. No computer hardware, no people, no legible text, no logos, no watermark. This is an opaque background image; its top and bottom will be faded to transparency in website CSS.
