@@ -1,3 +1,4 @@
+import dayjs from "dayjs";
 import { AsciiFrame } from "../components/AsciiFrame.tsx";
 import { Footer } from "../components/Footer.tsx";
 import NowPlaying from "../islands/NowPlaying.tsx";
@@ -19,6 +20,8 @@ export const handler: Handlers<HomeData> = {
 };
 
 export default function Home({ data }: PageProps<HomeData>) {
+  const yearsOfExperience = dayjs().diff("2015-01-01", "year");
+
   return (
     <div class="site-shell">
       <header class="project-topbar">
@@ -81,7 +84,8 @@ export default function Home({ data }: PageProps<HomeData>) {
           <div class="profile-copy">
             <p>
               I'm a software engineer and open-source builder based in
-              Antananarivo, Madagascar, with over 11 years of experience.
+              Antananarivo, Madagascar, with over {yearsOfExperience}{" "}
+              years of experience.
             </p>
             <p>
               I build things for the internet, from decentralized music
