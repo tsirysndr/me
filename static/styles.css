@@ -312,7 +312,16 @@ a:hover {
 }
 
 .music-format {
-  margin-top: 4px;
+  margin-left: auto;
+  max-width: 100%;
+  text-align: right;
+}
+
+.music-label-row {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 2px 16px;
 }
 
 .music-title,

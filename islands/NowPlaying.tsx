@@ -274,16 +274,27 @@ function NowPlaying() {
             )
         )}
         <div class="music-details">
-          <p class="music-label">
-            {label} on{" "}
-            <a
-              href="https://rocksky.app/profile/tsiry-sandratraina.com"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Rocksky ↗
-            </a>
-          </p>
+          <div class="music-label-row">
+            <p class="music-label">
+              {label} on{" "}
+              <a
+                href="https://rocksky.app/profile/tsiry-sandratraina.com"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Rocksky ↗
+              </a>
+            </p>
+            {song.audioFormat && (
+              <p
+                class="music-format"
+                title="Source audio format"
+                aria-label={`Source audio format: ${song.audioFormat}`}
+              >
+                {song.audioFormat}
+              </p>
+            )}
+          </div>
           {song.songUri
             ? (
               <a
@@ -308,15 +319,6 @@ function NowPlaying() {
               </a>
             )
             : <p class="music-artist">{song.artist}</p>}
-          {song.audioFormat && (
-            <p
-              class="music-format"
-              title="Source audio format"
-              aria-label={`Source audio format: ${song.audioFormat}`}
-            >
-              {song.audioFormat}
-            </p>
-          )}
         </div>
       </div>
       {isPlaying && (
