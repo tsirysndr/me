@@ -364,7 +364,8 @@ a:hover {
 
 .live-eq {
   display: inline-flex;
-  align-items: flex-end;
+  align-items: center;
+  align-self: center;
   gap: 2px;
   height: 20px;
   margin-left: 3px;
@@ -385,7 +386,7 @@ a:hover {
   height: 100%;
   background: currentColor;
   transform: scaleY(0.1);
-  transform-origin: bottom;
+  transform-origin: center;
   transition: transform 25ms linear;
 }
 
