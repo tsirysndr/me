@@ -1,6 +1,9 @@
 import { AsciiFrame } from "./AsciiFrame.tsx";
 
 const projects = [
+  { name: "snapcaster", url: "https://github.com/tsirysndr/snapcaster" },
+  { name: "hlsd", url: "https://github.com/tsirysndr/hlsd" },
+  { name: "squeezed", url: "https://github.com/tsirysndr/squeezed" },
   { name: "macports-rs", url: "https://github.com/tsirysndr/macports-rs" },
   { name: "bsdkrun", url: "https://github.com/tsirysndr/bsdkrun" },
   { name: "music-player", url: "https://github.com/tsirysndr/music-player" },
