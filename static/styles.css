@@ -192,6 +192,10 @@ a:hover {
   line-height: 1.95;
 }
 
+.profile-copy > p + p {
+  margin-top: 16px;
+}
+
 .dashed-box {
   position: relative;
   /* PlanetScale's dashed-box pattern: 12px dashes with 4px gaps. */
