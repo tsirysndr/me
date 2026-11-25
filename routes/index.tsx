@@ -86,6 +86,7 @@ export default function Home({ data }: PageProps<HomeData>) {
             years of experience. My work spans systems programming, developer
             infrastructure, and decentralized applications. My{" "}
             <a
+              class="profile-bio-link"
               href="https://github.com/tsirysndr"
               target="_blank"
               rel="noopener noreferrer"
@@ -94,6 +95,7 @@ export default function Home({ data }: PageProps<HomeData>) {
             </a>{" "}
             includes{" "}
             <a
+              class="profile-bio-link"
               href="https://github.com/tsirysndr/bsdkrun"
               target="_blank"
               rel="noopener noreferrer"
@@ -101,6 +103,7 @@ export default function Home({ data }: PageProps<HomeData>) {
               bsdkrun
             </a>, a microVM launcher;{" "}
             <a
+              class="profile-bio-link"
               href="https://github.com/tsirysndr/dbsandbox"
               target="_blank"
               rel="noopener noreferrer"
@@ -108,6 +111,7 @@ export default function Home({ data }: PageProps<HomeData>) {
               dbsandbox
             </a>, database branching and sandboxing tools;{" "}
             <a
+              class="profile-bio-link"
               href="https://github.com/fluentci-io/fluentci"
               target="_blank"
               rel="noopener noreferrer"
@@ -115,6 +119,7 @@ export default function Home({ data }: PageProps<HomeData>) {
               Fluent CI
             </a>, portable CI/CD tooling; and{" "}
             <a
+              class="profile-bio-link"
               href="https://rocksky.app"
               target="_blank"
               rel="noopener noreferrer"
@@ -122,6 +127,7 @@ export default function Home({ data }: PageProps<HomeData>) {
               Rocksky
             </a>, a music platform built on the{" "}
             <a
+              class="profile-bio-link"
               href="https://atproto.com"
               target="_blank"
               rel="noopener noreferrer"

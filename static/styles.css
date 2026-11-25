@@ -239,6 +239,11 @@ a:hover {
   text-decoration-color: var(--line);
 }
 
+.profile-copy .profile-bio-link {
+  color: var(--accent);
+  text-decoration-color: currentColor;
+}
+
 .profile-copy a:hover {
   color: #c026d3;
   text-decoration-color: currentColor;
