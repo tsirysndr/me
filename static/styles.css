@@ -326,12 +326,12 @@ a:hover {
 .music-device {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: flex-start;
   gap: 6px;
-  margin-top: 8px;
+  margin-bottom: 12px;
   color: var(--muted);
   font-size: 11px;
-  text-align: right;
+  text-align: left;
   overflow-wrap: anywhere;
 }
 
