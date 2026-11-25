@@ -274,8 +274,15 @@ function NowPlaying() {
               stroke-linejoin="round"
               aria-hidden="true"
             >
-              <path d="M11 5 6 9H3v6h3l5 4V5Z" />
-              <path d="M15 8a6 6 0 0 1 0 8M18 5a10 10 0 0 1 0 14" />
+              <rect x="3" y="3" width="18" height="18" rx="2" />
+              <circle cx="12" cy="14" r="4" />
+              <circle
+                cx="12"
+                cy="7"
+                r="0.75"
+                fill="currentColor"
+                stroke="none"
+              />
             </svg>
             <span class="sr-only">Playback device:</span>
             <span>{song.deviceName}</span>
