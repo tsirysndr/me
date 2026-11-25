@@ -328,8 +328,7 @@ a:hover {
   align-items: center;
   justify-content: flex-end;
   gap: 6px;
-  max-width: 35%;
-  margin-left: auto;
+  margin-top: 8px;
   color: var(--muted);
   font-size: 11px;
   text-align: right;
