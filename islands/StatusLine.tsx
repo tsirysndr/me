@@ -2,6 +2,34 @@ import { useEffect, useState } from "preact/hooks";
 
 export default function StatusLine() {
   const [position, setPosition] = useState("Top");
+  const [clock, setClock] = useState({
+    text: "--:--:--",
+    dateTime: undefined as string | undefined,
+  });
+
+  useEffect(() => {
+    const formatter = new Intl.DateTimeFormat("en-GB", {
+      timeZone: "Indian/Antananarivo",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hourCycle: "h23",
+    });
+    const update = () => {
+      const now = new Date();
+      setClock({ text: formatter.format(now), dateTime: now.toISOString() });
+    };
+    const visible = () => {
+      if (document.visibilityState === "visible") update();
+    };
+    update();
+    const timer = setInterval(update, 1000);
+    document.addEventListener("visibilitychange", visible);
+    return () => {
+      clearInterval(timer);
+      document.removeEventListener("visibilitychange", visible);
+    };
+  }, []);
 
   useEffect(() => {
     let frame = 0;
@@ -46,6 +74,14 @@ export default function StatusLine() {
       <div class="editor-statusline-meta">
         <span class="editor-statusline-location">Antananarivo, MG</span>
         <span class="editor-statusline-encoding">utf-8</span>
+        <time
+          class="editor-statusline-clock"
+          dateTime={clock.dateTime}
+          title="Local time in Antananarivo (UTC+3)"
+          aria-label={`Antananarivo local time: ${clock.text}`}
+        >
+          {clock.text}
+        </time>
         <span
           class="editor-statusline-position"
           aria-label={`Page position: ${position}`}
