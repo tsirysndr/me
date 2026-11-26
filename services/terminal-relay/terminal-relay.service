@@ -1,0 +1,23 @@
+[Unit]
+Description=Browser Linux SSH networking relay
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/orangepi/github/me/services/terminal-relay
+ExecStart=/home/orangepi/.local/share/mise/installs/node/latest/bin/node server.mjs
+Environment=NODE_ENV=production
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=10
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=read-only
+MemoryMax=192M
+CPUQuota=50%
+TasksMax=32
+
+[Install]
+WantedBy=default.target

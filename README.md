@@ -9,6 +9,9 @@ people.
 See this website is live at
 [tsiry-sandratraina.com](https://tsiry-sandratraina.com).
 
+The Orange Pi also hosts the browser Linux
+[SSH networking relay](services/terminal-relay/README.md).
+
 ### Usage
 
 Make sure to install Deno: https://deno.land/manual/getting_started/installation

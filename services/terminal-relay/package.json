@@ -1,0 +1,16 @@
+{
+  "name": "portfolio-terminal-relay",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node server.mjs",
+    "test": "node --test server.test.mjs"
+  },
+  "dependencies": {
+    "@mercuryworkshop/wisp-js": "0.5.3",
+    "ws": "8.22.0"
+  },
+  "engines": {
+    "node": ">=24"
+  }
+}
