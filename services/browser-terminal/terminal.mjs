@@ -54,7 +54,7 @@ function flushBootOutput() {
   bootOutput = "";
 }
 
-// Capture the toggle before the terminal can forward it to Bash or SSH.
+// Capture the toggle before the terminal can forward it to Fish or SSH.
 addEventListener("keydown", (event) => {
   if (
     event.ctrlKey && !event.altKey && !event.metaKey &&
@@ -154,7 +154,7 @@ try {
       if (signal.includes("\x1b]133;A\x07")) {
         ready = true;
         clearTimeout(bootTimeout);
-        status("Bash · Linux in your browser");
+        status("Fish · Linux in your browser");
         if (!hidden) terminal.focus();
       }
     }

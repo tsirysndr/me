@@ -15,10 +15,7 @@ else
     neofetch --ascii_colors 3 --colors 3 7 7 3 7 7 --disable gpu resolution de wm wm_theme theme icons
 fi
 
-source /usr/local/share/blesh/ble.sh --noattach
 eval "$(oh-my-posh init bash --config "$HOME/.config/oh-my-posh/orange.omp.json")"
 eval "$(zoxide init bash)"
-eval "$(atuin init bash --disable-up-arrow)"
 _browser_prompt_marker() { printf '\033]133;A\007'; }
-blehook PRECMD+=_browser_prompt_marker
-ble-attach
+PROMPT_COMMAND+=(_browser_prompt_marker)

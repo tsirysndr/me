@@ -12,10 +12,10 @@ See this website is live at
 The Orange Pi also hosts the browser Linux
 [SSH networking relay](services/terminal-relay/README.md). Use **Ctrl +
 backtick** or the floating keyboard button to open the
-[browser Linux terminal](services/browser-terminal/README.md), with Bash,
-OpenSSH, curl, Git, neofetch and passwordless sudo/root. **Ctrl + Shift +
-backtick** toggles terminal fullscreen. **?** shows keyboard shortcuts. Linux
-loads only when opened.
+[browser Linux terminal](services/browser-terminal/README.md), with Fish as its
+default shell, Bash, OpenSSH, curl, Git, neofetch and passwordless sudo/root.
+**Ctrl + Shift + backtick** toggles terminal fullscreen. **?** shows keyboard
+shortcuts. Linux loads only when opened.
 
 ### Usage
 

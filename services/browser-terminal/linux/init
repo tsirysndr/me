@@ -21,9 +21,9 @@ ip route add default via 192.168.86.1
 printf 'nameserver 192.168.86.1\n' > /etc/resolv.conf
 exec </dev/hvc0 >/dev/hvc0 2>&1
 printf '\033[2J\033[H'
-printf 'Linux in your browser. Bash + real Unix commands.\n'
+printf 'Linux in your browser. Fish + real Unix commands.\n'
 printf 'Files live in this tab; reload or restart resets Linux.\n\n'
 while true; do
     setsid -c su - visitor
-    printf '\r\nShell exited. Starting a new Bash session...\r\n'
+    printf '\r\nShell exited. Starting a new Fish session...\r\n'
 done

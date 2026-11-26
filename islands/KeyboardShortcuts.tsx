@@ -234,7 +234,7 @@ export default function KeyboardShortcuts() {
             >
               restart
             </button>
-            {!status.startsWith("Bash") && (
+            {!status.startsWith("Fish") && (
               <span
                 class={failed ? "terminal-pane-error" : "terminal-pane-status"}
                 role="status"
@@ -247,7 +247,7 @@ export default function KeyboardShortcuts() {
             key={generation}
             ref={frame}
             src={asset("/terminal/index.html")}
-            title="Linux Bash terminal"
+            title="Linux Fish terminal"
             class="browser-terminal-frame"
             onLoad={syncFrame}
           />

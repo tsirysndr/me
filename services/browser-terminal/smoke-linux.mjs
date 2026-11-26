@@ -74,7 +74,7 @@ vm.add_listener("virtio-console0-output-bytes", (bytes) => {
         vm.bus.send(
           "virtio-console0-input-bytes",
           new TextEncoder().encode(
-            "\x1b[200~echo ATUIN_HISTORY_PROBE\x1b[201~\r",
+            "\x1b[200~echo FISH_HISTORY_PROBE\x1b[201~\r",
           ),
         ),
       500,
@@ -83,7 +83,7 @@ vm.add_listener("virtio-console0-output-bytes", (bytes) => {
   if (!sent && historyProbeSent && prompts >= 2) {
     sent = true;
     const command =
-      "printf '\\nBASH=%s\\nBLE=%s\\n' \"$BASH_VERSION\" \"$BLE_VERSION\"; uname -m; ssh -V; curl --version | head -1; git --version; oh-my-posh version; atuin --version; tmux -V; zoxide --version; mkdir -p ~/zoxide-test; zoxide add ~/zoxide-test; z zoxide-test && test \"$PWD\" = \"$HOME/zoxide-test\" && echo __ZOXIDE_OK__; cd; test -L ~/.tmux.conf && echo __OH_MY_TMUX_OK__; tmux -L smoke new-session -d -s smoke 'sleep 30' && tmux -L smoke list-panes -F '#{pane_current_command}' && tmux -L smoke kill-server && echo __TMUX_OK__; atuin search --cmd-only --limit 10 ATUIN_HISTORY_PROBE | grep -x 'echo ATUIN_HISTORY_PROBE' && echo __ATUIN_HISTORY_OK__; printf 'real unix commands\\n' | grep unix | tr a-z A-Z; stty size; df -h /; printf 'ROOT='; sudo -n id -u; printf 'SU='; su - root -c 'id -u'; ssh-keyscan -t ed25519 -T 10 github.com; curl -fsS --max-time 20 -o /dev/null https://example.com && echo __CURL_OK__; timeout 25 git ls-remote --exit-code https://github.com/tsirysndr/me.git HEAD && echo __GIT_OK__; printf '\\n__SMOKE_DONE__\\n'";
+      "printf '\\nFISH=%s\\nDEFAULT_SHELL=%s\\n' $version $SHELL; fish --version; bash --version | head -1; uname -m; ssh -V; curl --version | head -1; git --version; oh-my-posh version; tmux -V; zoxide --version; mkdir -p ~/zoxide-test; zoxide add ~/zoxide-test; z zoxide-test; and test \"$PWD\" = \"$HOME/zoxide-test\"; and echo __ZOXIDE_OK__; cd; test -L ~/.tmux.conf; and echo __OH_MY_TMUX_OK__; tmux -L smoke new-session -d -s smoke 'sleep 30'; and tmux -L smoke list-panes -F '#{pane_current_command}'; and tmux -L smoke show-options -gv default-shell; and tmux -L smoke kill-server; and echo __TMUX_OK__; history search --exact 'echo FISH_HISTORY_PROBE' | grep -x 'echo FISH_HISTORY_PROBE'; and echo __FISH_HISTORY_OK__; if not type -q atuin; and not test -d /usr/local/share/blesh; echo __REMOVED_TOOLS_OK__; end; grep -q '^root:.*:/usr/bin/fish$' /etc/passwd; and echo __ROOT_FISH_OK__; printf 'real unix commands\\n' | grep unix | tr a-z A-Z; stty size; df -h /; printf 'ROOT='; sudo -n id -u; printf 'SU='; su - root -c 'id -u'; ssh-keyscan -t ed25519 -T 10 github.com; curl -fsS --max-time 20 -o /dev/null https://example.com; and echo __CURL_OK__; timeout 25 git ls-remote --exit-code https://github.com/tsirysndr/me.git HEAD; and echo __GIT_OK__; printf '\\n__SMOKE_DONE__\\n'";
     setTimeout(
       () =>
         vm.bus.send(
@@ -101,16 +101,18 @@ vm.add_listener("virtio-console0-output-bytes", (bytes) => {
     clearTimeout(timeout);
     try {
       output = stripVTControlCharacters(output);
-      assert.match(output, /BASH=5\./);
-      assert.match(output, /BLE=0\.4/);
-      assert.match(output, /atuin 15\.0\.0/);
+      assert.match(output, /FISH=4\./);
+      assert.match(output, /DEFAULT_SHELL=\/usr\/bin\/fish/);
+      assert.match(output, /GNU bash, version 5\./);
+      assert.match(output, /\r\n__ROOT_FISH_OK__\r\n/);
+      assert.match(output, /\r\n__REMOVED_TOOLS_OK__\r\n/);
       assert.match(output, /tmux 3\.5a/);
       assert.match(output, /33\.4\.1/);
       assert.match(output, /zoxide 0\./);
       assert.match(output, /\r\n__ZOXIDE_OK__\r\n/);
       assert.match(output, /\r\n__TMUX_OK__\r\n/);
       assert.match(output, /\r\n__OH_MY_TMUX_OK__\r\n/);
-      assert.match(output, /\r\n__ATUIN_HISTORY_OK__\r\n/);
+      assert.match(output, /\r\n__FISH_HISTORY_OK__\r\n/);
       assert.match(output, /i[3-6]86/);
       assert.match(output, /OpenSSH_/);
       assert.match(output, /curl 8\./);
@@ -125,7 +127,7 @@ vm.add_listener("virtio-console0-output-bytes", (bytes) => {
       assert.match(output, /\r\n__CURL_OK__\r\n/);
       assert.match(output, /\r\n__GIT_OK__\r\n/);
       console.log(
-        "\nPASS: Bash, tmux/Oh My Tmux, Oh My Posh, ble.sh, Atuin history, Unix tools, root/sudo, storage, geometry, and relay networking.",
+        "\nPASS: Fish default shell/history, tmux/Oh My Tmux, Oh My Posh, zoxide, removed Atuin/ble.sh, Unix tools, root/sudo, storage, geometry, and relay networking.",
       );
     } catch (error) {
       console.error(error);
