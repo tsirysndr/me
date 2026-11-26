@@ -6,7 +6,6 @@ const OWNER_DID = "did:plc:7vdlgi2bflelz7mmuxoqjfcr";
 const state = new PreferredPlayerState();
 let socket: WebSocket | undefined;
 let connecting: Promise<void> | undefined;
-let initialSnapshot: Promise<void> | undefined;
 let retryAt = 0;
 const listeners = new Set<(track: PublicPlayerTrack | null) => void>();
 let expiry: ReturnType<typeof setTimeout> | undefined;
@@ -39,8 +38,6 @@ async function connect() {
     const ws = new WebSocket("wss://api.rocksky.app/ws");
     socket = ws;
     let lastMessage = Date.now();
-    let resolveSnapshot: () => void;
-    initialSnapshot = new Promise<void>((resolve) => resolveSnapshot = resolve);
     const handshake = setTimeout(() => ws.close(), 8000);
     const heartbeat = setInterval(() => {
       if (Date.now() - lastMessage > 30_000) ws.close();
@@ -69,7 +66,6 @@ async function connect() {
         ) publish();
         if (frame.type === "devices") {
           clearTimeout(handshake);
-          resolveSnapshot();
         }
       } catch {
         // Ignore malformed messages; never log account payloads.
@@ -79,7 +75,6 @@ async function connect() {
     ws.onclose = () => {
       clearTimeout(handshake);
       clearInterval(heartbeat);
-      resolveSnapshot();
       if (socket !== ws) return;
       socket = undefined;
       state.clear();
@@ -101,26 +96,11 @@ function ensureConnection() {
   return connecting;
 }
 
-export async function getOrangePiTrack() {
-  await ensureConnection();
-  if (initialSnapshot) {
-    let timer: ReturnType<typeof setTimeout> | undefined;
-    await Promise.race([
-      initialSnapshot,
-      new Promise<void>((resolve) => timer = setTimeout(resolve, 1500)),
-    ]);
-    clearTimeout(timer);
-  }
-  return state.playing();
-}
-
 export function subscribeOrangePiTrack(
   listener: (track: PublicPlayerTrack | null) => void,
 ) {
   listeners.add(listener);
   listener(state.playing());
-  void getOrangePiTrack().then(() => {
-    if (listeners.has(listener)) listener(state.playing());
-  });
+  void ensureConnection();
   return () => listeners.delete(listener);
 }

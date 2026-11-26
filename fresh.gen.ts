@@ -6,7 +6,6 @@ import * as $_404 from "./routes/_404.tsx";
 import * as $_app from "./routes/_app.tsx";
 import * as $api_joke from "./routes/api/joke.ts";
 import * as $api_now_playing from "./routes/api/now-playing.ts";
-import * as $api_orange_pi from "./routes/api/orange-pi.ts";
 import * as $greet_name_ from "./routes/greet/[name].tsx";
 import * as $index from "./routes/index.tsx";
 import * as $AnimatedName from "./islands/AnimatedName.tsx";
@@ -22,7 +21,6 @@ const manifest = {
     "./routes/_app.tsx": $_app,
     "./routes/api/joke.ts": $api_joke,
     "./routes/api/now-playing.ts": $api_now_playing,
-    "./routes/api/orange-pi.ts": $api_orange_pi,
     "./routes/greet/[name].tsx": $greet_name_,
     "./routes/index.tsx": $index,
   },
