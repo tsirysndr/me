@@ -22,7 +22,6 @@ printf 'nameserver 192.168.86.1\n' > /etc/resolv.conf
 exec </dev/hvc0 >/dev/hvc0 2>&1
 printf '\033[2J\033[H'
 printf 'Linux in your browser. Bash + real Unix commands.\n'
-printf 'Network: SSH and HTTP(S) via Orange Pi.\n'
 printf 'Files live in this tab; reload or restart resets Linux.\n\n'
 while true; do
     setsid -c su - visitor

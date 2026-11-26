@@ -271,7 +271,7 @@ export default function KeyboardShortcuts() {
             onLoad={syncFrame}
           />
           <div class="browser-terminal-footer">
-            <span>Files reset on reload. SSH connects via Orange Pi.</span>
+            <span>Files reset on reload.</span>
             <kbd>
               {fullscreen ? "Ctrl + Shift + ` · restore" : "Ctrl + ` · hide"}
             </kbd>
