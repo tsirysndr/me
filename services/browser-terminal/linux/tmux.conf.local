@@ -1,0 +1,16 @@
+
+# Browser terminal: normal monospace glyphs and the orange ANSI accent.
+tmux_conf_theme_colour_4="colour3"
+tmux_conf_theme_colour_5="colour3"
+tmux_conf_theme_colour_10="colour3"
+tmux_conf_theme_colour_11="colour3"
+tmux_conf_theme_status_bg="default"
+tmux_conf_theme_window_status_bg="default"
+tmux_conf_theme_status_left=" #S "
+tmux_conf_theme_status_right="#{username} | %H:%M"
+tmux_conf_theme_left_separator_main=""
+tmux_conf_theme_left_separator_sub="|"
+tmux_conf_theme_right_separator_main=""
+tmux_conf_theme_right_separator_sub="|"
+set -g default-shell /bin/bash #!important
+set -g default-terminal xterm-256color #!important

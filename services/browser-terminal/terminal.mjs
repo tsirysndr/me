@@ -3,6 +3,7 @@ import { V86 } from "v86";
 
 let vm;
 let ready = false;
+let consoleReady = false;
 let stopped = false;
 let started = false;
 let hidden = false;
@@ -10,6 +11,8 @@ let resize = [80, 24];
 let outputTimer = 0;
 let bootOutput = "";
 let bootTimeout;
+let promptSignal = "";
+const outputDecoder = new TextDecoder();
 const encoder = new TextEncoder();
 const host = document.getElementById("terminal");
 const parentOrigin = location.origin;
@@ -18,7 +21,9 @@ const tellParent = (type, extra = {}) => {
 };
 const status = (text, error = false) => tellParent("status", { text, error });
 const input = (data) => {
-  if (ready && !stopped) vm.bus.send("virtio-console0-input-bytes", data);
+  if (consoleReady && !stopped) {
+    vm.bus.send("virtio-console0-input-bytes", data);
+  }
 };
 const terminal = new WTerm(host, {
   scrollbackLines: 2000,
@@ -45,7 +50,7 @@ function fail(message) {
 
 function flushBootOutput() {
   outputTimer = 0;
-  if (bootOutput && !ready && !stopped) terminal.write(bootOutput);
+  if (bootOutput && !consoleReady && !stopped) terminal.write(bootOutput);
   bootOutput = "";
 }
 
@@ -129,24 +134,33 @@ try {
     vm.bus.send("virtio-console0-resize", resize);
   });
   vm.add_listener("serial0-output-byte", (byte) => {
-    if (ready || stopped) return;
+    if (consoleReady || stopped) return;
     bootOutput += String.fromCharCode(byte);
     if (!outputTimer) outputTimer = setTimeout(flushBootOutput, 16);
   });
   vm.add_listener("virtio-console0-output-bytes", (bytes) => {
     if (stopped) return;
-    if (!ready) {
-      ready = true;
-      clearTimeout(bootTimeout);
+    if (!consoleReady) {
+      consoleReady = true;
       clearTimeout(outputTimer);
       bootOutput = "";
       vm.bus.send("virtio-console0-resize", resize);
-      status("Bash · Linux in your browser");
-      if (!hidden) terminal.focus();
+      status("Preparing shell…");
+    }
+    if (!ready) {
+      const signal = promptSignal +
+        outputDecoder.decode(bytes, { stream: true });
+      promptSignal = signal.slice(-16);
+      if (signal.includes("\x1b]133;A\x07")) {
+        ready = true;
+        clearTimeout(bootTimeout);
+        status("Bash · Linux in your browser");
+        if (!hidden) terminal.focus();
+      }
     }
     terminal.write(bytes);
   });
-  bootTimeout = setTimeout(() => fail("Linux startup timed out."), 120_000);
+  bootTimeout = setTimeout(() => fail("Linux startup timed out."), 180_000);
 } catch (error) {
   console.error(error);
   fail("Linux could not load. Check your connection and restart.");

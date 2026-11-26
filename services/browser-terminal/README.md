@@ -9,11 +9,12 @@ intercept terminal input.
 Opening the terminal creates an iframe and loads wterm, v86 and a small Alpine
 Linux image. No Linux assets are requested during the initial page load. The
 guest has GNU Bash, BusyBox's Unix commands, curl, Git, sudo, neofetch, OpenSSH
-(`ssh`, `scp`, `sftp`), and `ssh-keygen`. Neofetch runs on interactive Bash
-startup. The `visitor` account has passwordless sudo, and the guest's root
-account has an empty password and Bash as its shell (`sudo -i` or `su -`).
-Commands run in the visitor's browser. No host files, login tokens or SSH keys
-are mounted into the VM.
+(`ssh`, `scp`, `sftp`), `ssh-keygen`, tmux with Oh My Tmux, Oh My Posh, ble.sh,
+Atuin, and zoxide. Neofetch runs on interactive Bash startup. The `visitor`
+account has passwordless sudo, and the guest's root account has an empty
+password and Bash as its shell (`sudo -i` or `su -`). Commands run in the
+visitor's browser. No host files, login tokens or SSH keys are mounted into the
+VM.
 
 Drag the pane divider (or use its arrow keys when focused) to resize the split.
 The website scrolls independently in the top pane. Hiding the terminal restores
@@ -29,6 +30,27 @@ the initial ramfs into this writable mount, so `df -h /` reports its capacity.
 The virtio console carries terminal input, output, and resize events. Page
 volume shortcuts never receive keystrokes from the terminal iframe. Light/dark
 theme changes update the terminal without restarting Linux.
+
+## Shell tools
+
+Both `visitor` and root load ble.sh for syntax highlighting and line editing, Oh
+My Posh for an orange prompt, and Atuin for searchable local command history.
+**Ctrl + R** opens Atuin; the up arrow keeps normal shell history navigation.
+Atuin's sync and update checks are disabled and no account is required. Its
+history database is inside the temporary VM filesystem and resets on reload.
+
+Run `tmux` to start a multiplexer session. Oh My Tmux is already installed
+through `~/.tmux.conf`; edit `~/.tmux.conf.local` to customize it. The
+configuration uses ordinary monospace glyphs and orange terminal colors. No Nerd
+Font is needed. Neofetch is skipped when opening additional tmux panes.
+
+The prompt configuration is `~/.config/oh-my-posh/orange.omp.json`; Atuin's
+configuration is `~/.config/atuin/config.toml`.
+
+Zoxide is initialized for both accounts: use `z <directory>` to jump to a
+previously visited directory. Its local database is also temporary. The default
+ble.sh keymap is cached during the image build to avoid compiling it on the
+visitor's first keypress.
 
 ## Networking
 
@@ -73,13 +95,15 @@ asset URLs. It includes v86's WebAssembly fallback for older browser engines.
 npm run test:linux --prefix services/browser-terminal
 ```
 
-This boots the actual committed kernel/initramfs in v86, verifies Bash, OpenSSH,
-curl, Git, automatic neofetch, passwordless root/sudo, a Unix pipeline, terminal
-geometry, root filesystem capacity, an SSH key exchange with GitHub, an HTTPS
-download, and Git remote discovery through the production Orange Pi relay. It
-does not authenticate to a remote account. Set `TERMINAL_TEST_RELAY` to test
-against a different WISP relay. Set `DEBUG_BOOT=1` for serial boot logs. Website
-playback tests remain under `deno test --allow-env=NODE_ENV lib/`.
+This boots the actual committed kernel/initramfs in v86, verifies Bash, tmux
+with Oh My Tmux, Oh My Posh, ble.sh, Atuin history recording, zoxide directory
+jumps, OpenSSH, curl, Git, automatic neofetch, passwordless root/sudo, a Unix
+pipeline, terminal geometry, root filesystem capacity, an SSH key exchange with
+GitHub, an HTTPS download, and Git remote discovery through the production
+Orange Pi relay. It does not authenticate to a remote account. Set
+`TERMINAL_TEST_RELAY` to test against a different WISP relay. Set `DEBUG_BOOT=1`
+for serial boot logs. Website playback tests remain under
+`deno test --allow-env=NODE_ENV lib/`.
 
 ## Upstream software and sources
 
@@ -99,6 +123,17 @@ playback tests remain under `deno test --allow-env=NODE_ENV lib/`.
 - [neofetch 7.1.0](https://github.com/dylanaraps/neofetch/tree/7.1.0), MIT;
   vendored unmodified in `linux/neofetch` with its license, checked against
   SHA-256 `3dc33493e54029fb1528251552093a9f9a2894fcf94f9c3a6f809136a42348c7`.
+- [Oh My Tmux](https://github.com/gpakosz/.tmux/tree/58a3dcc0d718ec0fa1c0d5a2fddd640a1ad7a5b7),
+  pinned at `58a3dcc0`; the upstream configuration and licenses are installed
+  unmodified in `~/.tmux`.
+- [Oh My Posh 33.4.1](https://github.com/JanDeDobbeleer/oh-my-posh/tree/v33.4.1),
+  cross-compiled with Go for Linux/386, with its license in
+  `/usr/share/licenses/oh-my-posh` in the guest.
+- [ble.sh](https://github.com/akinomyoga/ble.sh/tree/152942758f567e51fd17bdc7b3783d27b3c476aa),
+  pinned at `15294275` with contrib `d2109203`; built and installed in
+  `/usr/local/share/blesh`, including licenses.
+- tmux 3.5a, Atuin 15.0.0, and zoxide 0.9.7 come from Alpine's x86 packages.
+  Atuin is the local history package rather than the optional sync variant.
 
 The Dockerfile and guest initialization scripts in `linux/` describe the image
 customizations. No SSH daemon runs in the browser image.

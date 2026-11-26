@@ -1,12 +1,24 @@
 [[ $- == *i* ]] || return
 export TERM=xterm-256color
+export LANG=C.UTF-8
+export TERM_PROGRAM=wterm
 export HISTSIZE=1000
 export HISTFILESIZE=1000
 export PS1='\[\e[33m\]\u@\h\[\e[0m\]:\w\$ '
 shopt -s checkwinsize
 alias ll='ls -lah'
-if (( COLUMNS < 76 )); then
+if [[ -n ${TMUX-} ]]; then
+    :
+elif (( COLUMNS < 76 )); then
     neofetch --off --colors 3 7 7 3 7 7 --disable gpu resolution de wm wm_theme theme icons
 else
     neofetch --ascii_colors 3 --colors 3 7 7 3 7 7 --disable gpu resolution de wm wm_theme theme icons
 fi
+
+source /usr/local/share/blesh/ble.sh --noattach
+eval "$(oh-my-posh init bash --config "$HOME/.config/oh-my-posh/orange.omp.json")"
+eval "$(zoxide init bash)"
+eval "$(atuin init bash --disable-up-arrow)"
+_browser_prompt_marker() { printf '\033]133;A\007'; }
+blehook PRECMD+=_browser_prompt_marker
+ble-attach

@@ -1,0 +1,37 @@
+{
+  "version": 4,
+  "final_space": true,
+  "blocks": [
+    {
+      "type": "prompt",
+      "alignment": "left",
+      "segments": [
+        {
+          "type": "session",
+          "style": "plain",
+          "foreground": "yellow",
+          "template": "{{ .UserName }}@{{ .HostName }} "
+        },
+        {
+          "type": "path",
+          "style": "plain",
+          "template": "{{ .Path }}",
+          "properties": { "style": "full" }
+        },
+        {
+          "type": "git",
+          "style": "plain",
+          "foreground": "yellow",
+          "template": " ({{ .HEAD }})",
+          "properties": { "fetch_status": false }
+        },
+        {
+          "type": "text",
+          "style": "plain",
+          "foreground": "yellow",
+          "template": " >"
+        }
+      ]
+    }
+  ]
+}
