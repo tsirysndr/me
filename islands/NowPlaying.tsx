@@ -7,9 +7,7 @@ import LiveAudio from "./LiveAudio.tsx";
 import { canStreamFromDevice } from "../lib/liveAudio.ts";
 import { AudioEqualizer } from "../components/AudioEqualizer.tsx";
 import { formatAudioDetails } from "../lib/audioFormat.ts";
-import { fetchNowPlayingSource } from "../lib/nowPlayingSource.ts";
-
-const did = "did:plc:7vdlgi2bflelz7mmuxoqjfcr";
+import type { NowPlayingSnapshot } from "../lib/nowPlayingFeed.ts";
 
 function NowPlaying() {
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -37,16 +35,16 @@ function NowPlaying() {
   const songRef = useRef(song);
   const isPlayingRef = useRef(isPlaying);
 
-  const fetchNowPlaying = async () => {
-    const data = await fetchNowPlayingSource(did);
-    if (Object.keys(data).length === 0) {
-      await fetchSpotifyNowPlaying();
+  const applySnapshot = (snapshot: NowPlayingSnapshot) => {
+    const data = snapshot.track;
+    if (!data) {
+      setSong(null);
+      setIsPlaying(false);
       return;
     }
-
-    setIsPlaying(true);
-    setLabel("Now Playing");
-
+    const lastPlayed = snapshot.source === "last-played";
+    setIsPlaying(!lastPlayed);
+    setLabel(lastPlayed ? "Last Played" : "Now Playing");
     setSong({
       title: data.title,
       artist: data.album_artist || data.artist,
@@ -63,73 +61,8 @@ function NowPlaying() {
       isPlaying: data.is_playing,
       duration: data.length,
       progress: data.elapsed,
-      deviceName: typeof data.device_name === "string"
-        ? data.device_name.trim() || null
-        : null,
+      deviceName: data.device_name.trim() || null,
       audioFormat: formatAudioDetails(data),
-    });
-  };
-
-  const fetchSpotifyNowPlaying = async () => {
-    const response = await fetch(
-      `https://api.rocksky.app/spotify/currently-playing\?did=${did}`,
-      { signal: AbortSignal.timeout(8000) },
-    );
-    const data = await response.json();
-
-    if (Object.keys(data).length === 0) {
-      setIsPlaying(false);
-      await fetchLastPlayedSong();
-      return;
-    }
-
-    setIsPlaying(true);
-    setLabel("Now Playing");
-
-    setSong({
-      title: data.item.name,
-      artist: data.item.artists.map((artist: { name: string }) => artist.name)
-        .join(", "),
-      duration: data.item.duration_ms,
-      progress: data.progress_ms,
-      albumArt: _.get(data, "item.album.images.0.url"),
-      albumUri: data.albumUri
-        ? `https://rocksky.app/${data.albumUri.split("at://")[1]}`
-        : null,
-      songUri: data.songUri
-        ? `https://rocksky.app/${data.songUri.split("at://")[1]}`
-        : null,
-      artistUri: data.artistUri
-        ? `https://rocksky.app/${data.artistUri.split("at://")[1]}`
-        : null,
-      isPlaying: data.is_playing,
-      audioFormat: formatAudioDetails(data),
-    });
-  };
-
-  const fetchLastPlayedSong = async () => {
-    const response = await fetch(
-      "https://api.rocksky.app/users/tsiry-sandratraina.com/scrobbles?size=1&offset=0",
-      { signal: AbortSignal.timeout(8000) },
-    );
-    const data = await response.json();
-
-    setLabel("Last Played");
-
-    setSong({
-      title: data[0].title,
-      artist: data[0].artist,
-      audioFormat: formatAudioDetails(data[0]),
-      albumArt: data[0].album_art,
-      albumUri: data[0].album_uri
-        ? `https://rocksky.app/${data[0].album_uri.split("at://")[1]}`
-        : null,
-      songUri: data[0].track_uri
-        ? `https://rocksky.app/${data[0].track_uri.split("at://")[1]}`
-        : null,
-      artistUri: data[0].artist_uri
-        ? `https://rocksky.app/${data[0].artist_uri.split("at://")[1]}`
-        : null,
     });
   };
 
@@ -180,24 +113,25 @@ function NowPlaying() {
   }, []);
 
   useEffect(() => {
-    let stopped = false;
-    let inFlight = false;
-    const poll = async () => {
-      if (stopped || inFlight) return;
-      inFlight = true;
+    const events = new EventSource("/api/now-playing");
+    const update = (event: MessageEvent<string>) => {
       try {
-        await fetchNowPlaying();
+        const snapshot = JSON.parse(event.data);
+        if (
+          ["orange-pi", "rocksky", "spotify", "last-played"].includes(
+            snapshot.source,
+          ) &&
+          (snapshot.track === null || typeof snapshot.track?.title === "string")
+        ) applySnapshot(snapshot);
       } catch {
-        // Keep the last rendered track during a temporary network failure.
-      } finally {
-        inFlight = false;
+        // Keep the last valid state if an event is malformed. EventSource
+        // reconnects automatically and receives a fresh snapshot after a drop.
       }
     };
-    const interval = setInterval(poll, 3000);
-    void poll();
+    events.addEventListener("now-playing", update);
     return () => {
-      stopped = true;
-      clearInterval(interval);
+      events.removeEventListener("now-playing", update);
+      events.close();
     };
   }, []);
 

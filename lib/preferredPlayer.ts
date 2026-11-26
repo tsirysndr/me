@@ -23,7 +23,7 @@ interface Entry {
   positionAt: number;
 }
 
-function record(value: unknown): value is Record<string, unknown> {
+export function record(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
@@ -35,6 +35,29 @@ function number(value: unknown): number | undefined {
   return typeof value === "number" && Number.isFinite(value) && value >= 0
     ? value
     : undefined;
+}
+
+export function publicPlayerTrack(
+  value: unknown,
+  deviceName = "",
+): PublicPlayerTrack | null {
+  if (!record(value) || !text(value.title)?.trim()) return null;
+  return {
+    title: text(value.title)!,
+    artist: text(value.artist) ?? "",
+    album_artist: text(value.album_artist) ?? "",
+    album_art: text(value.album_art),
+    album_uri: text(value.album_uri),
+    song_uri: text(value.song_uri),
+    artist_uri: text(value.artist_uri),
+    codec: text(value.codec),
+    bitrate: number(value.bitrate),
+    sample_rate: number(value.sample_rate),
+    length: number(value.length) ?? number(value.duration_ms) ?? 0,
+    elapsed: number(value.elapsed) ?? 0,
+    is_playing: value.is_playing === true,
+    device_name: deviceName,
+  };
 }
 
 function elapsed(entry: Entry, now: number): number {
@@ -56,29 +79,15 @@ export class PreferredPlayerState {
 
   private track(id: unknown, name: unknown, value: unknown, now: number) {
     if (typeof id !== "string" || !canStreamFromDevice(text(name))) return;
-    if (!record(value) || !text(value.title)?.trim()) {
+    const track = publicPlayerTrack(value, "Orange Pi Zero 3W");
+    if (!track) {
       this.devices.delete(id);
       return;
     }
     this.devices.set(id, {
       trackAt: now,
       positionAt: now,
-      track: {
-        title: text(value.title)!,
-        artist: text(value.artist) ?? "",
-        album_artist: text(value.album_artist) ?? "",
-        album_art: text(value.album_art),
-        album_uri: text(value.album_uri),
-        song_uri: text(value.song_uri),
-        artist_uri: text(value.artist_uri),
-        codec: text(value.codec),
-        bitrate: number(value.bitrate),
-        sample_rate: number(value.sample_rate),
-        length: number(value.length) ?? number(value.duration_ms) ?? 0,
-        elapsed: number(value.elapsed) ?? 0,
-        is_playing: value.is_playing === true,
-        device_name: "Orange Pi Zero 3W",
-      },
+      track,
     });
   }
 

@@ -1,4 +1,6 @@
 import { PreferredPlayerState } from "./preferredPlayer.ts";
+import type { PublicPlayerTrack } from "./preferredPlayer.ts";
+import { canStreamFromDevice } from "./liveAudio.ts";
 
 const OWNER_DID = "did:plc:7vdlgi2bflelz7mmuxoqjfcr";
 const state = new PreferredPlayerState();
@@ -6,6 +8,15 @@ let socket: WebSocket | undefined;
 let connecting: Promise<void> | undefined;
 let initialSnapshot: Promise<void> | undefined;
 let retryAt = 0;
+const listeners = new Set<(track: PublicPlayerTrack | null) => void>();
+let expiry: ReturnType<typeof setTimeout> | undefined;
+
+function publish() {
+  clearTimeout(expiry);
+  const track = state.playing();
+  for (const listener of listeners) listener(track);
+  if (track) expiry = setTimeout(publish, 12005);
+}
 
 async function connect() {
   if (socket || Date.now() < retryAt) return;
@@ -51,6 +62,11 @@ async function connect() {
       try {
         const frame = JSON.parse(event.data);
         state.ingest(frame);
+        if (
+          frame.type === "devices" || frame.type === "device_unregistered" ||
+          (frame.type === "message" && canStreamFromDevice(frame.device_name) &&
+            ["track", "status"].includes(frame.data?.type))
+        ) publish();
         if (frame.type === "devices") {
           clearTimeout(handshake);
           resolveSnapshot();
@@ -67,12 +83,14 @@ async function connect() {
       if (socket !== ws) return;
       socket = undefined;
       state.clear();
+      publish();
       retryAt = Date.now() + 5000;
       setTimeout(() => void ensureConnection(), 5000);
     };
   } catch {
     // Missing credentials or an unavailable relay fall back to public playback.
     state.clear();
+    publish();
   }
 }
 
@@ -94,4 +112,15 @@ export async function getOrangePiTrack() {
     clearTimeout(timer);
   }
   return state.playing();
+}
+
+export function subscribeOrangePiTrack(
+  listener: (track: PublicPlayerTrack | null) => void,
+) {
+  listeners.add(listener);
+  listener(state.playing());
+  void getOrangePiTrack().then(() => {
+    if (listeners.has(listener)) listener(state.playing());
+  });
+  return () => listeners.delete(listener);
 }

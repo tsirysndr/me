@@ -23,6 +23,13 @@ This will watch the project directory and restart as necessary.
 
 ### Orange Pi live player
 
+Browsers subscribe to `/api/now-playing` using Server-Sent Events (SSE), with
+automatic reconnection and an immediate snapshot for new connections. WebSocket
+playback updates are pushed straight through; the browser does not poll playback
+APIs. While the Pi is unavailable, one shared server-side refresher checks the
+fallback sources every three seconds for all connected visitors. SSE keep-alive
+comments are sent every 15 seconds, and disconnected visitors are unsubscribed.
+
 The now-playing component prefers **Orange Pi Zero 3W** whenever that device is
 connected and playing, independently of Rocksky's selected player. Otherwise it
 uses the normal Rocksky, Spotify, and last-played fallback. Live audio always
