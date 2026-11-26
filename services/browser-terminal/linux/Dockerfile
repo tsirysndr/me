@@ -4,9 +4,10 @@ RUN apk add --no-cache bash busybox-suid openssh-client openssh-keygen curl git 
 COPY neofetch /usr/local/bin/neofetch
 COPY neofetch-LICENSE.txt /usr/share/licenses/neofetch/LICENSE
 RUN echo '3dc33493e54029fb1528251552093a9f9a2894fcf94f9c3a6f809136a42348c7  /usr/local/bin/neofetch' | sha256sum -c - && chmod 755 /usr/local/bin/neofetch
-COPY init /init
+COPY bootstrap /init
+COPY init /sbin/browser-init
 COPY bashrc /etc/skel/.bashrc
-RUN chmod 755 /init && \
+RUN chmod 755 /init /sbin/browser-init && \
     adduser -D -s /bin/bash visitor && \
     printf '. ~/.bashrc\n' > /home/visitor/.bash_profile && \
     mkdir -p /home/visitor/.ssh && chmod 700 /home/visitor/.ssh && \

@@ -21,9 +21,9 @@ body {
 #terminal {
   --term-bg: #111111;
   --term-fg: #ededed;
-  --term-cursor: #e879f9;
-  --term-color-5: #e879f9;
-  --term-color-13: #e879f9;
+  --term-cursor: #ff8a00;
+  --term-color-3: #ff8a00;
+  --term-color-11: #ff8a00;
   --term-font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
     "Liberation Mono", "Courier New", monospace;
   --term-font-size: 13px;
@@ -31,7 +31,7 @@ body {
   box-sizing: border-box;
   width: 100%;
   height: 100%;
-  padding: 12px;
+  padding: 12px 12px calc(68px + env(safe-area-inset-bottom, 0px));
   border-radius: 0;
   box-shadow: none;
 }
@@ -39,10 +39,10 @@ body {
 :root[data-theme="light"] #terminal {
   --term-bg: #ffffff;
   --term-fg: #171717;
-  --term-cursor: #c026d3;
+  --term-cursor: #b84d00;
   --term-color-0: #ffffff;
-  --term-color-5: #c026d3;
+  --term-color-3: #b84d00;
   --term-color-7: #171717;
-  --term-color-13: #c026d3;
+  --term-color-11: #b84d00;
   --term-color-15: #333333;
 }

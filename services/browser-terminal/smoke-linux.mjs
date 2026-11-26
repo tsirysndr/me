@@ -14,7 +14,7 @@ const vm = new V86({
   wasm_path: fileURLToPath(
     new URL("node_modules/v86/build/v86.wasm", import.meta.url),
   ),
-  memory_size: 192 * 1024 * 1024,
+  memory_size: 512 * 1024 * 1024,
   bios: { url: `${root}seabios.bin` },
   vga_bios: { url: `${root}vgabios.bin` },
   bzimage: { url: `${root}linux/vmlinuz` },
@@ -54,7 +54,7 @@ vm.add_listener("virtio-console0-output-bytes", (bytes) => {
   if (!sent && output.includes("\x1b[0m:~$ ")) {
     sent = true;
     const command =
-      "printf '\\nBASH=%s\\n' \"$BASH_VERSION\"; uname -m; ssh -V; curl --version | head -1; git --version; printf 'real unix commands\\n' | grep unix | tr a-z A-Z; stty size; printf 'ROOT='; sudo -n id -u; printf 'SU='; su - root -c 'id -u'; ssh-keyscan -t ed25519 -T 10 github.com; curl -fsS --max-time 20 -o /dev/null https://example.com && echo __CURL_OK__; timeout 25 git ls-remote --exit-code https://github.com/tsirysndr/me.git HEAD && echo __GIT_OK__; printf '\\n__SMOKE_DONE__\\n'\n";
+      "printf '\\nBASH=%s\\n' \"$BASH_VERSION\"; uname -m; ssh -V; curl --version | head -1; git --version; printf 'real unix commands\\n' | grep unix | tr a-z A-Z; stty size; df -h /; printf 'ROOT='; sudo -n id -u; printf 'SU='; su - root -c 'id -u'; ssh-keyscan -t ed25519 -T 10 github.com; curl -fsS --max-time 20 -o /dev/null https://example.com && echo __CURL_OK__; timeout 25 git ls-remote --exit-code https://github.com/tsirysndr/me.git HEAD && echo __GIT_OK__; printf '\\n__SMOKE_DONE__\\n'\n";
     setTimeout(
       () =>
         vm.bus.send(
@@ -76,6 +76,7 @@ vm.add_listener("virtio-console0-output-bytes", (bytes) => {
       assert.match(output, /Alpine Linux/);
       assert.match(output, /ROOT=0/);
       assert.match(output, /SU=0/);
+      assert.match(output, /browser-root\s+384\.0M/);
       assert.match(output, /REAL UNIX COMMANDS/);
       assert.match(output, /30 100/);
       assert.match(output, /github\.com ssh-ed25519 AAAA/);

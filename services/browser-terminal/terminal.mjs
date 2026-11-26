@@ -102,7 +102,7 @@ try {
   const asset = (name) => `/terminal/${name}?${__LINUX_VERSION__}`;
   vm = new V86({
     wasm_path: asset("v86.wasm"),
-    memory_size: 192 * 1024 * 1024,
+    memory_size: 512 * 1024 * 1024,
     vga_memory_size: 512 * 1024,
     bios: { url: asset("seabios.bin") },
     vga_bios: { url: asset("vgabios.bin") },

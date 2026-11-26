@@ -1,0 +1,9 @@
+#!/bin/sh
+# Move out of the initial ramfs so df can report a bounded, writable root.
+mkdir -p /newroot
+mount -t tmpfs -o size=384m,mode=0755 browser-root /newroot
+for path in bin sbin lib usr etc home root var tmp opt mnt media run srv; do
+    [ ! -e "/$path" ] || cp -a "/$path" /newroot/
+done
+mkdir -p /newroot/dev /newroot/proc /newroot/sys
+exec switch_root /newroot /sbin/browser-init

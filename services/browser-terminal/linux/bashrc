@@ -2,11 +2,11 @@
 export TERM=xterm-256color
 export HISTSIZE=1000
 export HISTFILESIZE=1000
-export PS1='\[\e[35m\]\u@\h\[\e[0m\]:\w\$ '
+export PS1='\[\e[33m\]\u@\h\[\e[0m\]:\w\$ '
 shopt -s checkwinsize
 alias ll='ls -lah'
 if (( COLUMNS < 76 )); then
-    neofetch --off --colors 5 7 7 5 7 7 --disable gpu resolution de wm wm_theme theme icons
+    neofetch --off --colors 3 7 7 3 7 7 --disable gpu resolution de wm wm_theme theme icons
 else
-    neofetch --ascii_colors 5 --colors 5 7 7 5 7 7 --disable gpu resolution de wm wm_theme theme icons
+    neofetch --ascii_colors 3 --colors 3 7 7 3 7 7 --disable gpu resolution de wm wm_theme theme icons
 fi

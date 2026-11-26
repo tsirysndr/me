@@ -210,57 +210,38 @@ export default function KeyboardShortcuts() {
               }}
             />
           )}
-          <div class="browser-terminal-header">
-            <h2 id="browser-terminal-title">&gt;_ Terminal</h2>
-            <span
-              class={`browser-terminal-status${failed ? " is-error" : ""}`}
-              role="status"
+          <h2 id="browser-terminal-title" class="sr-only">
+            Linux terminal pane
+          </h2>
+          <div class="terminal-pane-help" aria-label="Terminal shortcuts">
+            <button type="button" onClick={hideTerminal}>
+              <kbd>Ctrl + `</kbd> hide
+            </button>
+            <span aria-hidden="true">·</span>
+            <button type="button" onClick={toggleFullscreen}>
+              <kbd>Ctrl + Shift + `</kbd>{" "}
+              {fullscreen ? "restore pane" : "fullscreen"}
+            </button>
+            <span aria-hidden="true">·</span>
+            <button
+              type="button"
+              title="Restart Linux and clear its temporary files"
+              onClick={() => {
+                setStatus("Loading Linux…");
+                setFailed(false);
+                setGeneration((current) => current + 1);
+              }}
             >
-              {status}
-            </span>
-            <div class="browser-terminal-actions">
-              <button
-                type="button"
-                onClick={toggleFullscreen}
-                aria-label={fullscreen
-                  ? "Exit terminal fullscreen"
-                  : "Full-screen terminal"}
-                title="Toggle terminal fullscreen (Ctrl + Shift + `)"
+              restart
+            </button>
+            {!status.startsWith("Bash") && (
+              <span
+                class={failed ? "terminal-pane-error" : "terminal-pane-status"}
+                role="status"
               >
-                <svg
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="1.5"
-                  aria-hidden="true"
-                >
-                  {fullscreen
-                    ? <path d="M4 9h5V4m6 0v5h5M4 15h5v5m6 0v-5h5" />
-                    : <path d="M9 4H4v5m11-5h5v5M4 15v5h5m6 0h5v-5" />}
-                </svg>
-              </button>
-              <button
-                type="button"
-                title="Restart Linux and clear its temporary files"
-                onClick={() => {
-                  setStatus("Loading Linux…");
-                  setFailed(false);
-                  setGeneration((current) => current + 1);
-                }}
-              >
-                Restart
-              </button>
-              <button
-                type="button"
-                onClick={hideTerminal}
-                aria-label="Hide terminal"
-                title="Hide terminal (Ctrl + `)"
-              >
-                ×
-              </button>
-            </div>
+                {status}
+              </span>
+            )}
           </div>
           <iframe
             key={generation}
@@ -270,12 +251,6 @@ export default function KeyboardShortcuts() {
             class="browser-terminal-frame"
             onLoad={syncFrame}
           />
-          <div class="browser-terminal-footer">
-            <span>Files reset on reload.</span>
-            <kbd>
-              {fullscreen ? "Ctrl + Shift + ` · restore" : "Ctrl + ` · hide"}
-            </kbd>
-          </div>
         </section>
       )}
       {helpOpen && (
@@ -309,7 +284,10 @@ export default function KeyboardShortcuts() {
               <kbd>−</kbd> / <kbd>+</kbd>
             </span>
           </div>
-          <p>Volume shortcuts work outside text fields and the terminal.</p>
+          <p>
+            Volume shortcuts work outside text fields and the terminal. Linux
+            files reset on reload.
+          </p>
         </div>
       )}
       <button

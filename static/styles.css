@@ -10,6 +10,7 @@
   --line: #303030;
   --surface: #191919;
   --accent: #e879f9;
+  --terminal-accent: #ff8a00;
   --statusline-height: 24px;
 }
 
@@ -21,6 +22,7 @@
   --line: #e5e5e5;
   --surface: #fafafa;
   --accent: #c026d3;
+  --terminal-accent: #b84d00;
 }
 
 html {
@@ -153,7 +155,7 @@ a:hover {
 }
 
 .keyboard-shortcuts-panel kbd,
-.browser-terminal-footer kbd {
+.terminal-pane-help kbd {
   font: inherit;
   white-space: nowrap;
 }
@@ -200,72 +202,54 @@ a:hover {
   top: -3px;
   z-index: 1;
   height: 7px;
-  border-top: 1px dashed var(--line);
   cursor: row-resize;
   touch-action: none;
 }
 
-.terminal-pane-divider:hover,
 .terminal-pane-divider:focus-visible {
-  border-color: var(--accent);
   outline: none;
 }
 
-.browser-terminal-header {
+.terminal-pane-divider::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: calc(50% - 16px);
+  width: 32px;
+  height: 2px;
+  background: var(--terminal-accent);
+  opacity: 0;
+}
+
+.terminal-pane-divider:hover::after,
+.terminal-pane-divider:focus-visible::after {
+  opacity: 1;
+}
+
+.terminal-pane-help {
   display: flex;
+  flex-shrink: 0;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 18px;
-  min-height: 42px;
-  padding: 0 14px;
-  border-bottom: 1px dashed var(--line);
-  background: var(--surface);
+  gap: 6px 12px;
+  padding: 8px 12px;
+  color: var(--muted);
   font-size: 11px;
 }
 
-.browser-terminal-header h2 {
-  flex-shrink: 0;
-  margin: 0;
-  color: var(--accent);
-  font-size: 12px;
-  font-weight: 600;
+.terminal-pane-help kbd,
+.terminal-pane-help button:hover,
+.terminal-pane-error {
+  color: var(--terminal-accent);
 }
 
-.browser-terminal-status {
-  flex: 1;
-  min-width: 0;
-  overflow: hidden;
-  color: var(--muted);
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.browser-terminal-status.is-error {
-  color: var(--accent);
-}
-
-.browser-terminal-actions {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin-left: auto;
-}
-
-.browser-terminal-actions button {
-  padding: 2px;
+.terminal-pane-help button {
+  padding: 0;
   border: 0;
   background: transparent;
-  color: var(--muted);
-  font-size: 11px;
+  color: inherit;
+  font: inherit;
   cursor: pointer;
-}
-
-.browser-terminal-actions button:last-child {
-  font-size: 22px;
-  line-height: 1;
-}
-
-.browser-terminal-actions button:hover {
-  color: var(--accent);
 }
 
 .browser-terminal-frame {
@@ -274,19 +258,6 @@ a:hover {
   width: 100%;
   border: 0;
   background: var(--page);
-}
-
-.browser-terminal-footer {
-  display: flex;
-  box-sizing: border-box;
-  align-items: center;
-  justify-content: space-between;
-  min-height: calc(64px + env(safe-area-inset-bottom, 0px));
-  gap: 12px;
-  padding: 6px 90px 6px 14px;
-  border-top: 1px dashed var(--line);
-  color: var(--muted);
-  font-size: 10px;
 }
 
 .editor-statusline {
@@ -849,20 +820,9 @@ a:hover {
 }
 
 @media (max-width: 600px) {
-  .browser-terminal-header {
-    flex-wrap: wrap;
-    gap: 0 12px;
-    padding: 8px 12px;
-  }
-
-  .browser-terminal-status {
-    order: 3;
-    flex-basis: 100%;
+  .terminal-pane-help {
+    gap: 4px 8px;
     font-size: 10px;
-  }
-
-  .browser-terminal-footer > kbd {
-    display: none;
   }
 
   .editor-statusline-location,

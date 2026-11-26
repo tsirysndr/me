@@ -22,6 +22,10 @@ tab. Reloading the page or clicking **Restart** starts a fresh VM and clears
 temporary files, including any SSH keys or `known_hosts` entries created inside
 it.
 
+The VM has 512 MiB of RAM and a 384 MiB tmpfs root filesystem. Boot moves out of
+the initial ramfs into this writable mount, so `df -h /` reports its capacity.
+`/dev` is a separate devtmpfs for device entries, not the main storage volume.
+
 The virtio console carries terminal input, output, and resize events. Page
 volume shortcuts never receive keystrokes from the terminal iframe. Light/dark
 theme changes update the terminal without restarting Linux.
@@ -71,11 +75,11 @@ npm run test:linux --prefix services/browser-terminal
 
 This boots the actual committed kernel/initramfs in v86, verifies Bash, OpenSSH,
 curl, Git, automatic neofetch, passwordless root/sudo, a Unix pipeline, terminal
-geometry, an SSH key exchange with GitHub, an HTTPS download, and Git remote
-discovery through the production Orange Pi relay. It does not authenticate to a
-remote account. Set `TERMINAL_TEST_RELAY` to test against a different WISP
-relay. Set `DEBUG_BOOT=1` for serial boot logs. Website playback tests remain
-under `deno test --allow-env=NODE_ENV lib/`.
+geometry, root filesystem capacity, an SSH key exchange with GitHub, an HTTPS
+download, and Git remote discovery through the production Orange Pi relay. It
+does not authenticate to a remote account. Set `TERMINAL_TEST_RELAY` to test
+against a different WISP relay. Set `DEBUG_BOOT=1` for serial boot logs. Website
+playback tests remain under `deno test --allow-env=NODE_ENV lib/`.
 
 ## Upstream software and sources
 
