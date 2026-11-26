@@ -10,7 +10,7 @@
   --line: #303030;
   --surface: #191919;
   --accent: #e879f9;
-  --statusline-height: 32px;
+  --statusline-height: 24px;
 }
 
 :root[data-theme="light"] {
