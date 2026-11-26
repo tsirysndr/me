@@ -28,7 +28,11 @@ automatic reconnection and an immediate snapshot for new connections. WebSocket
 playback updates are pushed straight through; the browser does not poll playback
 APIs. While the Pi is unavailable, one shared server-side refresher checks the
 fallback sources every three seconds for all connected visitors. SSE keep-alive
-comments are sent every 15 seconds, and disconnected visitors are unsubscribed.
+events are sent every 15 seconds, and disconnected visitors are unsubscribed.
+The browser replaces stalled SSE connections after 35 seconds without an event,
+and reconnects when returning to the tab or coming back online. The server
+retries failed Rocksky connections, including failed login-file reads and
+half-open sockets, without requiring a visitor to reload the page.
 
 The now-playing component prefers **Orange Pi Zero 3W** whenever that device is
 connected and playing, independently of Rocksky's selected player. Otherwise it

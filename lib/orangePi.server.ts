@@ -1,12 +1,10 @@
 import { PreferredPlayerState } from "./preferredPlayer.ts";
 import type { PublicPlayerTrack } from "./preferredPlayer.ts";
 import { canStreamFromDevice } from "./liveAudio.ts";
+import { createRockskySocket } from "./rockskySocket.ts";
 
 const OWNER_DID = "did:plc:7vdlgi2bflelz7mmuxoqjfcr";
 const state = new PreferredPlayerState();
-let socket: WebSocket | undefined;
-let connecting: Promise<void> | undefined;
-let retryAt = 0;
 const listeners = new Set<(track: PublicPlayerTrack | null) => void>();
 let expiry: ReturnType<typeof setTimeout> | undefined;
 
@@ -17,90 +15,49 @@ function publish() {
   if (track) expiry = setTimeout(publish, 12005);
 }
 
-async function connect() {
-  if (socket || Date.now() < retryAt) return;
-  retryAt = Date.now() + 5000;
-  try {
-    // Server-only: reuse the daemon owner's login. Never import this module in
-    // an island or return credentials, queues or control capabilities to clients.
-    const path = Deno.env.get("ROCKSKY_TOKEN_FILE") ??
-      `${Deno.env.get("HOME")}/.rocksky/token.json`;
-    const { token } = JSON.parse(await Deno.readTextFile(path));
-    if (typeof token !== "string") return;
-    // Refuse a login for another account. Rocksky verifies the JWT signature
-    // when registering; decoding here only checks which account we intend to use.
-    const payload = token.split(".")[1].replaceAll("-", "+").replaceAll(
-      "_",
-      "/",
-    );
-    if (JSON.parse(atob(payload)).did !== OWNER_DID) return;
+async function loadOwnerToken(): Promise<string | undefined> {
+  const path = Deno.env.get("ROCKSKY_TOKEN_FILE") ??
+    `${Deno.env.get("HOME")}/.rocksky/token.json`;
+  const { token } = JSON.parse(await Deno.readTextFile(path));
+  if (typeof token !== "string") return;
+  // Refuse a login for another account. Rocksky verifies the JWT signature
+  // when registering; decoding here only checks which account we intend to use.
+  const payload = token.split(".")[1].replaceAll("-", "+").replaceAll(
+    "_",
+    "/",
+  );
+  if (JSON.parse(atob(payload)).did !== OWNER_DID) return;
 
-    const ws = new WebSocket("wss://api.rocksky.app/ws");
-    socket = ws;
-    let lastMessage = Date.now();
-    const handshake = setTimeout(() => ws.close(), 8000);
-    const heartbeat = setInterval(() => {
-      if (Date.now() - lastMessage > 30_000) ws.close();
-      else if (ws.readyState === WebSocket.OPEN) ws.send("ping");
-    }, 10_000);
+  return token;
+}
 
-    ws.onopen = () => {
-      // Register only as a listener: never send commands, tracks or set_primary.
-      ws.send(JSON.stringify({
-        type: "register",
-        clientName: "Personal website (read-only)",
-        token,
-      }));
-    };
-    ws.onmessage = (event) => {
-      if (socket !== ws || typeof event.data !== "string") return;
-      lastMessage = Date.now();
-      if (event.data === "pong") return;
-      try {
-        const frame = JSON.parse(event.data);
-        state.ingest(frame);
-        if (
-          frame.type === "devices" || frame.type === "device_unregistered" ||
-          (frame.type === "message" && canStreamFromDevice(frame.device_name) &&
-            ["track", "status"].includes(frame.data?.type))
-        ) publish();
-        if (frame.type === "devices") {
-          clearTimeout(handshake);
-        }
-      } catch {
-        // Ignore malformed messages; never log account payloads.
-      }
-    };
-    ws.onerror = () => ws.close();
-    ws.onclose = () => {
-      clearTimeout(handshake);
-      clearInterval(heartbeat);
-      if (socket !== ws) return;
-      socket = undefined;
-      state.clear();
-      publish();
-      retryAt = Date.now() + 5000;
-      setTimeout(() => void ensureConnection(), 5000);
-    };
-  } catch {
-    // Missing credentials or an unavailable relay fall back to public playback.
+const connection = createRockskySocket({
+  loadToken: loadOwnerToken,
+  onFrame(frame) {
+    state.ingest(frame);
+    if (typeof frame !== "object" || frame === null) return;
+    const data = frame as Record<string, unknown>;
+    const message = data.data as Record<string, unknown> | undefined;
+    if (
+      data.type === "devices" || data.type === "device_unregistered" ||
+      (data.type === "message" &&
+        canStreamFromDevice(
+          typeof data.device_name === "string" ? data.device_name : undefined,
+        ) &&
+        ["track", "status"].includes(String(message?.type)))
+    ) publish();
+  },
+  onDisconnect() {
     state.clear();
     publish();
-  }
-}
-
-function ensureConnection() {
-  if (!connecting) {
-    connecting = connect().finally(() => connecting = undefined);
-  }
-  return connecting;
-}
+  },
+});
 
 export function subscribeOrangePiTrack(
   listener: (track: PublicPlayerTrack | null) => void,
 ) {
   listeners.add(listener);
   listener(state.playing());
-  void ensureConnection();
+  void connection.ensure();
   return () => listeners.delete(listener);
 }

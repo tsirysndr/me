@@ -3,6 +3,7 @@ import type { NowPlayingSnapshot } from "./nowPlayingFeed.ts";
 export function nowPlayingEventStream(
   subscribe: (listener: (snapshot: NowPlayingSnapshot) => void) => () => void,
   signal: AbortSignal,
+  heartbeatMs = 15000,
 ) {
   const encoder = new TextEncoder();
   let unsubscribe = () => {};
@@ -44,9 +45,13 @@ export function nowPlayingEventStream(
       });
       heartbeat = setInterval(() => {
         if (!closed && (controller.desiredSize ?? 0) > 0) {
-          controller.enqueue(encoder.encode(": keep-alive\n\n"));
+          controller.enqueue(encoder.encode(
+            `: keep-alive\nevent: heartbeat\ndata: ${
+              JSON.stringify({ at: Date.now() })
+            }\n\n`,
+          ));
         }
-      }, 15000);
+      }, heartbeatMs);
       signal.addEventListener("abort", abort, { once: true });
     },
     pull() {

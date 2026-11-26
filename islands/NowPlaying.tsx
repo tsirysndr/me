@@ -9,6 +9,7 @@ import { AudioEqualizer } from "../components/AudioEqualizer.tsx";
 import { formatAudioDetails } from "../lib/audioFormat.ts";
 import type { NowPlayingSnapshot } from "../lib/nowPlayingFeed.ts";
 import { TrackLabelState } from "../lib/trackLabel.ts";
+import { PlaybackEvents } from "../lib/playbackEvents.ts";
 
 function NowPlaying() {
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -43,7 +44,12 @@ function NowPlaying() {
     if (!audio || audio.paused || audio.ended || audio.readyState < 2) {
       return null;
     }
-    const latency = latencyRef.current?.();
+    let latency;
+    try {
+      latency = latencyRef.current?.();
+    } catch {
+      return null;
+    }
     if (latency === undefined || !Number.isFinite(latency)) return null;
     return { positionMs: audio.currentTime * 1000, latencyMs: latency * 1000 };
   };
@@ -127,25 +133,29 @@ function NowPlaying() {
   }, []);
 
   useEffect(() => {
-    const events = new EventSource("/api/now-playing");
-    const update = (event: MessageEvent<string>) => {
-      try {
-        const snapshot = JSON.parse(event.data);
-        if (
-          ["orange-pi", "rocksky", "spotify", "last-played"].includes(
-            snapshot.source,
-          ) &&
-          (snapshot.track === null || typeof snapshot.track?.title === "string")
-        ) applySnapshot(snapshot);
-      } catch {
-        // Keep the last valid state if an event is malformed. EventSource
-        // reconnects automatically and receives a fresh snapshot after a drop.
-      }
+    const events = new PlaybackEvents(applySnapshot);
+    events.restart();
+    // This checks the existing connection, not a playback API polling loop.
+    const watchdog = setInterval(() => events.check(), 5000);
+    const visible = () => {
+      if (document.visibilityState === "visible") events.restart();
     };
-    events.addEventListener("now-playing", update);
+    const online = () => events.restart();
+    const pageshow = (event: PageTransitionEvent) => {
+      if (event.persisted) events.restart();
+    };
+    const pagehide = () => events.stop();
+    document.addEventListener("visibilitychange", visible);
+    globalThis.addEventListener("online", online);
+    globalThis.addEventListener("pageshow", pageshow);
+    globalThis.addEventListener("pagehide", pagehide);
     return () => {
-      events.removeEventListener("now-playing", update);
-      events.close();
+      clearInterval(watchdog);
+      document.removeEventListener("visibilitychange", visible);
+      globalThis.removeEventListener("online", online);
+      globalThis.removeEventListener("pageshow", pageshow);
+      globalThis.removeEventListener("pagehide", pagehide);
+      events.stop();
     };
   }, []);
 

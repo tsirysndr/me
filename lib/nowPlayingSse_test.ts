@@ -64,3 +64,23 @@ Deno.test("aborting an SSE request releases its subscription", async () => {
   assertEquals((await reader.read()).done, true);
   assertEquals(cleanups, 1);
 });
+
+Deno.test("SSE heartbeats are named events visible to the browser watchdog", async () => {
+  const stream = nowPlayingEventStream(
+    () => () => {},
+    new AbortController().signal,
+    5,
+  );
+  const reader = stream.getReader();
+  try {
+    await reader.read();
+    const event = decoder.decode((await reader.read()).value);
+    assert(event.includes("event: heartbeat\n"));
+    assertEquals(
+      typeof JSON.parse(event.split("data: ")[1].trim()).at,
+      "number",
+    );
+  } finally {
+    await reader.cancel();
+  }
+});
