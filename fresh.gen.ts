@@ -12,6 +12,7 @@ import * as $AnimatedName from "./islands/AnimatedName.tsx";
 import * as $LiveAudio from "./islands/LiveAudio.tsx";
 import * as $NowPlaying from "./islands/NowPlaying.tsx";
 import * as $Progressbar from "./islands/Progressbar.tsx";
+import * as $StatusLine from "./islands/StatusLine.tsx";
 import * as $ThemeChooser from "./islands/ThemeChooser.tsx";
 import type { Manifest } from "$fresh/server.ts";
 
@@ -29,6 +30,7 @@ const manifest = {
     "./islands/LiveAudio.tsx": $LiveAudio,
     "./islands/NowPlaying.tsx": $NowPlaying,
     "./islands/Progressbar.tsx": $Progressbar,
+    "./islands/StatusLine.tsx": $StatusLine,
     "./islands/ThemeChooser.tsx": $ThemeChooser,
   },
   baseUrl: import.meta.url,

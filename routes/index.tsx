@@ -8,6 +8,7 @@ import type { Handlers, PageProps } from "$fresh/server.ts";
 import { GitHubStars } from "../components/GitHubStars.tsx";
 import { getGitHubStars } from "../lib/github.ts";
 import { OpenSource } from "../components/OpenSource.tsx";
+import StatusLine from "../islands/StatusLine.tsx";
 
 interface HomeData {
   stars: number | null;
@@ -150,6 +151,7 @@ export default function Home({ data }: PageProps<HomeData>) {
         <NowPlaying />
         <Footer />
       </main>
+      <StatusLine />
     </div>
   );
 }
