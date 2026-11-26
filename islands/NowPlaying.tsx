@@ -8,9 +8,12 @@ import { canStreamFromDevice } from "../lib/liveAudio.ts";
 import { AudioEqualizer } from "../components/AudioEqualizer.tsx";
 import { formatAudioDetails } from "../lib/audioFormat.ts";
 import type { NowPlayingSnapshot } from "../lib/nowPlayingFeed.ts";
+import { TrackLabelState } from "../lib/trackLabel.ts";
 
 function NowPlaying() {
   const audioRef = useRef<HTMLAudioElement>(null);
+  const latencyRef = useRef<() => number>(null);
+  const trackLabels = useRef(new TrackLabelState());
   const [liveAvailable, setLiveAvailable] = useState(false);
   const progressInterval = useRef<ReturnType<typeof setInterval> | null>(null);
   const [progress, setProgress] = useState(0);
@@ -35,7 +38,18 @@ function NowPlaying() {
   const songRef = useRef(song);
   const isPlayingRef = useRef(isPlaying);
 
+  const readStreamClock = () => {
+    const audio = audioRef.current;
+    if (!audio || audio.paused || audio.ended || audio.readyState < 2) {
+      return null;
+    }
+    const latency = latencyRef.current?.();
+    if (latency === undefined || !Number.isFinite(latency)) return null;
+    return { positionMs: audio.currentTime * 1000, latencyMs: latency * 1000 };
+  };
+
   const applySnapshot = (snapshot: NowPlayingSnapshot) => {
+    setLabel(trackLabels.current.observe(snapshot, readStreamClock()));
     const data = snapshot.track;
     if (!data) {
       setSong(null);
@@ -44,7 +58,6 @@ function NowPlaying() {
     }
     const lastPlayed = snapshot.source === "last-played";
     setIsPlaying(!lastPlayed);
-    setLabel(lastPlayed ? "Last Played" : "Now Playing");
     setSong({
       title: data.title,
       artist: data.album_artist || data.artist,
@@ -72,6 +85,7 @@ function NowPlaying() {
     }
 
     progressInterval.current = setInterval(() => {
+      setLabel(trackLabels.current.tick(readStreamClock()));
       if (!isPlayingRef.current) {
         setProgress(0);
         return;
@@ -189,6 +203,7 @@ function NowPlaying() {
             audioRef={audioRef}
             available={liveAvailable}
             setAvailable={setLiveAvailable}
+            latencyRef={latencyRef}
           />
         )}
       </div>

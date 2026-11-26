@@ -6,10 +6,11 @@ import { liveVolume } from "../lib/liveVolume.ts";
 import { useLiveVolume } from "../hooks/useLiveVolume.ts";
 
 export default function LiveAudio(
-  { audioRef, available, setAvailable }: {
+  { audioRef, available, setAvailable, latencyRef }: {
     audioRef: RefObject<HTMLAudioElement>;
     available: boolean;
     setAvailable: (available: boolean) => void;
+    latencyRef: RefObject<() => number>;
   },
 ) {
   const decibels = useLiveVolume();
@@ -24,6 +25,14 @@ export default function LiveAudio(
     let disposed = false;
     let retry: ReturnType<typeof setTimeout> | undefined;
     let destroy: (() => void) | undefined;
+    const nativeLatency = () => {
+      const ranges = audio.seekable;
+      const edge = ranges.length
+        ? ranges.end(ranges.length - 1)
+        : audio.currentTime;
+      return Number.isFinite(edge) ? Math.max(0, edge - audio.currentTime) : 0;
+    };
+    latencyRef.current = nativeLatency;
     const initialGain = volumeDbToGain(liveVolume.get());
     audio.volume = initialGain;
     audio.muted = initialGain === 0;
@@ -75,6 +84,10 @@ export default function LiveAudio(
           return;
         }
         const hls = new Hls({ liveSyncDurationCount: 3, backBufferLength: 0 });
+        latencyRef.current = () =>
+          Number.isFinite(hls.latency)
+            ? Math.max(0, hls.latency)
+            : nativeLatency();
         destroy = () => hls.destroy();
         hls.on(Hls.Events.MANIFEST_PARSED, () => {
           markAvailable();
@@ -105,6 +118,7 @@ export default function LiveAudio(
     void connect();
     return () => {
       disposed = true;
+      latencyRef.current = null;
       setAvailable(false);
       audio.removeEventListener("canplay", markAvailable);
       audio.removeEventListener("error", markUnavailable);
