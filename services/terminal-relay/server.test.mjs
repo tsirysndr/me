@@ -63,7 +63,7 @@ test("WISP refuses local, private, Tailscale, other ports and UDP", async (t) =>
       ["100.64.0.1", 22, 1],
       ["::1", 22, 1],
       ["::ffff:127.0.0.1", 22, 1],
-      ["1.1.1.1", 443, 1],
+      ["1.1.1.1", 25, 1],
       ["1.1.1.1", 22, 2],
       ["localhost", 22, 1],
     ]

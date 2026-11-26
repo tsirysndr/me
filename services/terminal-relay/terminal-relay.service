@@ -1,5 +1,5 @@
 [Unit]
-Description=Browser Linux SSH networking relay
+Description=Browser Linux networking relay
 After=network-online.target
 Wants=network-online.target
 

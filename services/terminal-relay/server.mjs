@@ -7,7 +7,7 @@ export function configureWisp() {
   Object.assign(wisp.options, {
     allow_tcp_streams: true,
     allow_udp_streams: false,
-    port_whitelist: [22],
+    port_whitelist: [22, 80, 443],
     hostname_whitelist: null,
     allow_direct_ip: true,
     allow_private_ips: false,
@@ -100,7 +100,7 @@ if (
 ) {
   const relay = createRelay({ origin: process.env.RELAY_ORIGIN });
   relay.httpServer.listen(8181, "127.0.0.1", () => {
-    console.log("SSH WISP relay listening on 127.0.0.1:8181");
+    console.log("Browser Linux WISP relay listening on 127.0.0.1:8181");
   });
   for (const signal of ["SIGTERM", "SIGINT"]) {
     process.once(signal, () => relay.close().then(() => process.exit(0)));

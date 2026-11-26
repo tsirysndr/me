@@ -1,4 +1,4 @@
-# Browser Linux SSH relay
+# Browser Linux networking relay
 
 This standalone Node.js service provides WISP networking for a browser Linux VM.
 It does not run a shell on the Orange Pi. The terminal UI, Linux image, Bash and
@@ -14,11 +14,12 @@ net_device: {
 }
 ```
 
-All public destinations on TCP port 22 are allowed. UDP, other ports, loopback,
-private networks, link-local addresses, and Tailscale/CGNAT addresses are
-blocked, including destinations which resolve to those addresses. Each SSH
-target still requires its own authentication. This endpoint does not grant
-access to the Orange Pi's SSH server or supply SSH credentials.
+All public destinations on TCP ports 22, 80 and 443 are allowed for SSH, curl
+and Git over HTTPS. UDP, other ports, loopback, private networks, link-local
+addresses, and Tailscale/CGNAT addresses are blocked, including destinations
+which resolve to those addresses. Each SSH target still requires its own
+authentication. This endpoint does not grant access to the Orange Pi's SSH
+server or supply SSH credentials.
 
 The relay accepts the website's Origin (not an authentication mechanism), allows
 up to eight WebSocket clients and four streams per client, and expires sessions

@@ -1,0 +1,17 @@
+{
+  "name": "portfolio-browser-terminal",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs",
+    "test:linux": "node smoke-linux.mjs"
+  },
+  "dependencies": {
+    "@wterm/dom": "0.6.0",
+    "v86": "0.5.476"
+  },
+  "devDependencies": {
+    "esbuild": "0.27.0",
+    "ws": "8.22.0"
+  }
+}

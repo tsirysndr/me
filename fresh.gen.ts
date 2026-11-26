@@ -9,6 +9,7 @@ import * as $api_now_playing from "./routes/api/now-playing.ts";
 import * as $greet_name_ from "./routes/greet/[name].tsx";
 import * as $index from "./routes/index.tsx";
 import * as $AnimatedName from "./islands/AnimatedName.tsx";
+import * as $KeyboardShortcuts from "./islands/KeyboardShortcuts.tsx";
 import * as $LiveAudio from "./islands/LiveAudio.tsx";
 import * as $NowPlaying from "./islands/NowPlaying.tsx";
 import * as $Progressbar from "./islands/Progressbar.tsx";
@@ -27,6 +28,7 @@ const manifest = {
   },
   islands: {
     "./islands/AnimatedName.tsx": $AnimatedName,
+    "./islands/KeyboardShortcuts.tsx": $KeyboardShortcuts,
     "./islands/LiveAudio.tsx": $LiveAudio,
     "./islands/NowPlaying.tsx": $NowPlaying,
     "./islands/Progressbar.tsx": $Progressbar,
