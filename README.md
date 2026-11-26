@@ -35,6 +35,11 @@ connected and playing, independently of Rocksky's selected player. Otherwise it
 uses the normal Rocksky, Spotify, and last-played fallback. Live audio always
 comes from the Orange Pi's `/live/stream.m3u8` endpoint.
 
+Visitor volume is persisted in localStorage through a Jotai vanilla store and
+restored after reloads. New visitors start muted at −24 dB. If the browser
+blocks audible autoplay at a saved level, the player offers a Play button to
+resume at that level. These controls affect only the visitor's stream volume.
+
 The server maintains one read-only Rocksky WebSocket subscription using the
 existing login at `~/.rocksky/token.json`. Set `ROCKSKY_TOKEN_FILE` to use
 another path. The login must belong to this site's account. The SSE endpoint

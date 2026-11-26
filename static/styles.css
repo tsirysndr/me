@@ -390,6 +390,12 @@ a:hover {
   font-size: 16px;
 }
 
+.live-resume {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .live-eq {
   display: inline-flex;
   align-items: center;

@@ -2,6 +2,8 @@ import type { RefObject } from "preact";
 import { useCallback, useEffect, useState } from "preact/hooks";
 
 import { MAX_DB, MIN_DB, STEP_DB, volumeDbToGain } from "../lib/liveAudio.ts";
+import { liveVolume } from "../lib/liveVolume.ts";
+import { useLiveVolume } from "../hooks/useLiveVolume.ts";
 
 export default function LiveAudio(
   { audioRef, available, setAvailable }: {
@@ -10,9 +12,10 @@ export default function LiveAudio(
     setAvailable: (available: boolean) => void;
   },
 ) {
-  const [decibels, setDecibels] = useState(MIN_DB);
+  const decibels = useLiveVolume();
+  const [needsInteraction, setNeedsInteraction] = useState(false);
   const [status, setStatus] = useState(
-    "Live audio starts muted. Increase volume to listen.",
+    "Live audio is connecting.",
   );
 
   useEffect(() => {
@@ -21,8 +24,9 @@ export default function LiveAudio(
     let disposed = false;
     let retry: ReturnType<typeof setTimeout> | undefined;
     let destroy: (() => void) | undefined;
-    audio.volume = 0;
-    audio.muted = true;
+    const initialGain = volumeDbToGain(liveVolume.get());
+    audio.volume = initialGain;
+    audio.muted = initialGain === 0;
     const markAvailable = () => {
       if (!disposed) setAvailable(true);
     };
@@ -32,8 +36,17 @@ export default function LiveAudio(
     audio.addEventListener("canplay", markAvailable);
     audio.addEventListener("error", markUnavailable);
     const play = () =>
-      audio.play().catch(() => {
-        if (!disposed) setStatus("Increase volume to start live audio.");
+      audio.play().catch((error) => {
+        if (disposed) return;
+        if (error instanceof DOMException && error.name === "NotAllowedError") {
+          setNeedsInteraction(true);
+          setStatus("Press play to listen at your saved volume.");
+          // Keep the live stream running silently when audible autoplay is blocked.
+          audio.muted = true;
+          void audio.play().catch(() => {});
+        } else {
+          setStatus("Live audio is connecting.");
+        }
       });
 
     const connect = async () => {
@@ -103,26 +116,46 @@ export default function LiveAudio(
     };
   }, []);
 
-  const adjust = useCallback((step: number) => {
-    const next = Math.max(MIN_DB, Math.min(MAX_DB, decibels + step));
-    setDecibels(next);
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    audio.volume = volumeDbToGain(decibels);
+    audio.muted = decibels === MIN_DB || needsInteraction;
+    setStatus(
+      needsInteraction
+        ? "Press play to listen at your saved volume."
+        : decibels === MIN_DB
+        ? "Live audio muted."
+        : `Live audio volume ${decibels} dB.`,
+    );
+  }, [decibels, needsInteraction]);
+
+  const playAtVolume = useCallback((next: number) => {
     const audio = audioRef.current;
     if (!audio) return;
     const muted = next === MIN_DB;
+    setNeedsInteraction(false);
     audio.volume = volumeDbToGain(next);
     audio.muted = muted;
     if (!muted) {
       void audio.play().then(
         () => setStatus(`Live audio volume ${next} dB.`),
-        () =>
+        () => {
+          setNeedsInteraction(true);
+          audio.muted = true;
           setStatus(
-            "Live audio is connecting. Try increasing volume again shortly.",
-          ),
+            "Press play to listen at your saved volume.",
+          );
+        },
       );
     } else {
       setStatus("Live audio muted.");
     }
-  }, [decibels]);
+  }, [audioRef]);
+
+  const adjust = useCallback((step: number) => {
+    playAtVolume(liveVolume.set((current) => current + step));
+  }, [playAtVolume]);
 
   useEffect(() => {
     const shortcut = (event: KeyboardEvent) => {
@@ -173,6 +206,25 @@ export default function LiveAudio(
           Live
         </span>
       )}
+      {needsInteraction && decibels > MIN_DB && (
+        <button
+          type="button"
+          class="live-resume"
+          aria-label={`Play live audio at ${decibels} dB`}
+          title="Play at saved volume"
+          onClick={() => playAtVolume(liveVolume.get())}
+        >
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+            aria-hidden="true"
+          >
+            <path d="M7 4v16l14-8z" />
+          </svg>
+        </button>
+      )}
       <button
         type="button"
         aria-label="Decrease live volume by 3 dB"
@@ -185,7 +237,11 @@ export default function LiveAudio(
       </button>
       <output
         aria-label={`Live volume ${decibels} dB${
-          decibels === MIN_DB ? ", muted" : ""
+          decibels === MIN_DB
+            ? ", muted"
+            : needsInteraction
+            ? ", press play to listen"
+            : ""
         }`}
       >
         [{decibels} dB]
