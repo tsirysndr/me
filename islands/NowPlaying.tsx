@@ -7,6 +7,7 @@ import LiveAudio from "./LiveAudio.tsx";
 import { canStreamFromDevice } from "../lib/liveAudio.ts";
 import { AudioEqualizer } from "../components/AudioEqualizer.tsx";
 import { formatAudioDetails } from "../lib/audioFormat.ts";
+import { fetchNowPlayingSource } from "../lib/nowPlayingSource.ts";
 
 const did = "did:plc:7vdlgi2bflelz7mmuxoqjfcr";
 
@@ -37,10 +38,7 @@ function NowPlaying() {
   const isPlayingRef = useRef(isPlaying);
 
   const fetchNowPlaying = async () => {
-    const response = await fetch(
-      `https://api.rocksky.app/now-playing?did=${did}`,
-    );
-    const data = await response.json();
+    const data = await fetchNowPlayingSource(did);
     if (Object.keys(data).length === 0) {
       await fetchSpotifyNowPlaying();
       return;
@@ -75,6 +73,7 @@ function NowPlaying() {
   const fetchSpotifyNowPlaying = async () => {
     const response = await fetch(
       `https://api.rocksky.app/spotify/currently-playing\?did=${did}`,
+      { signal: AbortSignal.timeout(8000) },
     );
     const data = await response.json();
 
@@ -111,6 +110,7 @@ function NowPlaying() {
   const fetchLastPlayedSong = async () => {
     const response = await fetch(
       "https://api.rocksky.app/users/tsiry-sandratraina.com/scrobbles?size=1&offset=0",
+      { signal: AbortSignal.timeout(8000) },
     );
     const data = await response.json();
 
@@ -180,11 +180,25 @@ function NowPlaying() {
   }, []);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      fetchNowPlaying();
-    }, 3000);
-    fetchNowPlaying();
-    return () => clearInterval(interval);
+    let stopped = false;
+    let inFlight = false;
+    const poll = async () => {
+      if (stopped || inFlight) return;
+      inFlight = true;
+      try {
+        await fetchNowPlaying();
+      } catch {
+        // Keep the last rendered track during a temporary network failure.
+      } finally {
+        inFlight = false;
+      }
+    };
+    const interval = setInterval(poll, 3000);
+    void poll();
+    return () => {
+      stopped = true;
+      clearInterval(interval);
+    };
   }, []);
 
   useEffect(() => {
