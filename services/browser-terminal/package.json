@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "build": "node build.mjs",
+    "test:assets": "node --test download-assets.test.mjs",
     "test:linux": "node --experimental-wasm-jspi smoke-linux.mjs"
   },
   "dependencies": {

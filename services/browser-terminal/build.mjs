@@ -1,4 +1,5 @@
 import { build } from "esbuild";
+import { gzipSync } from "node:zlib";
 import { createHash } from "node:crypto";
 import { copyFile, cp, mkdir, readFile, writeFile } from "node:fs/promises";
 
@@ -33,6 +34,31 @@ for (
   );
 }
 
+const compressedKernel = gzipSync(
+  await readFile(new URL(`unkernel/${unkernelVersion}/unkernel.wasm`, out)),
+  { level: 9 },
+);
+await writeFile(new URL("linux/unkernel.wasm.gz", out), compressedKernel);
+const bootAssets = {};
+for (
+  const [name, file] of [["kernel", "linux/unkernel.wasm.gz"], [
+    "distro",
+    "linux/alpine.erofs",
+  ]]
+) {
+  const bytes = await readFile(new URL(file, out));
+  const sha256 = createHash("sha256").update(bytes).digest("hex");
+  bootAssets[name] = {
+    url: `/terminal/${name}?${sha256}`,
+    bytes: bytes.byteLength,
+    sha256,
+  };
+}
+await writeFile(
+  new URL("boot-assets.json", out),
+  JSON.stringify(bootAssets, null, 2) + "\n",
+);
+
 await build({
   absWorkingDir: new URL(".", import.meta.url).pathname,
   entryPoints: ["terminal.mjs", "terminal.css"],
@@ -46,6 +72,7 @@ await build({
   external: ["/terminal/*"],
   define: {
     __LINUX_VERSION__: JSON.stringify(linuxVersion),
+    __BOOT_ASSETS__: JSON.stringify(bootAssets),
     __UNKERNEL_VERSION__: JSON.stringify(unkernelVersion),
   },
 });

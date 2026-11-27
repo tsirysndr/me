@@ -1,7 +1,9 @@
 import { WTerm } from "@wterm/dom";
 import { checkSupport, createKernel } from "unkernel/web";
+import { downloadAsset, downloadPool } from "./download-assets.mjs";
 
 let vm;
+let distroUrl;
 const pendingInput = [];
 const bootAbort = new AbortController();
 let ready = false;
@@ -91,6 +93,7 @@ addEventListener("pagehide", () => {
   clearTimeout(bootTimeout);
   bootAbort.abort();
   vm?.stop();
+  if (distroUrl) URL.revokeObjectURL(distroUrl);
   terminal.destroy();
 });
 
@@ -99,15 +102,46 @@ try {
   tellParent("mounted");
   status("Loading Linux…");
   terminal.write("Starting Linux in WebAssembly…\r\n");
-  const asset = (name) => `/terminal/${name}?${__LINUX_VERSION__}`;
   const support = await checkSupport();
   if (!support.ok) throw new Error(support.problems.join(" "));
   bootTimeout = setTimeout(() => fail("Linux startup timed out."), 180_000);
+  let cache;
+  try {
+    cache = await caches.open("portfolio-linux-assets-v1");
+  } catch { /* Optional storage. */ }
+  const pool = downloadPool(6);
+  let loaded = 0;
+  const total = __BOOT_ASSETS__.kernel.bytes + __BOOT_ASSETS__.distro.bytes;
+  const onProgress = (bytes) => {
+    loaded += bytes;
+    const message = `Loading Linux… ${(loaded / 1e6).toFixed(1)} / ${
+      (total / 1e6).toFixed(1)
+    } MB`;
+    status(message);
+    terminal.write(`\r\x1b[2K${message}`);
+  };
+  const options = { pool, cache, signal: bootAbort.signal, onProgress };
+  const kernelReady = downloadAsset(__BOOT_ASSETS__.kernel, options).then((
+    blob,
+  ) =>
+    WebAssembly.compileStreaming(
+      new Response(blob.stream().pipeThrough(new DecompressionStream("gzip")), {
+        headers: { "Content-Type": "application/wasm" },
+      }),
+    )
+  );
+  const [kernel, distro] = await Promise.all([
+    kernelReady,
+    downloadAsset(__BOOT_ASSETS__.distro, options),
+  ]);
+  bootAbort.signal.throwIfAborted();
+  distroUrl = URL.createObjectURL(distro);
+  terminal.write("\r\x1b[2KStarting Linux…\r\n");
   vm = await createKernel({
     worker: true,
     signal: bootAbort.signal,
-    kernel: asset(`unkernel/${__UNKERNEL_VERSION__}/unkernel.wasm`),
-    distro: asset("distro"),
+    kernel,
+    distro: distroUrl,
     memoryMiB: 1024,
     disks: [{
       kind: "data",

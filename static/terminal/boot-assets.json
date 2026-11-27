@@ -1,0 +1,12 @@
+{
+  "kernel": {
+    "url": "/terminal/kernel?f1e9baa07e2523acf6974a2ee07eace0d6f48faa556f1075f4d827900e080c50",
+    "bytes": 4415244,
+    "sha256": "f1e9baa07e2523acf6974a2ee07eace0d6f48faa556f1075f4d827900e080c50"
+  },
+  "distro": {
+    "url": "/terminal/distro?7cf192a0919260a1e2d254ee70ed20c419a5e5a598d8357104d7ba1cbe7b6170",
+    "bytes": 31338496,
+    "sha256": "7cf192a0919260a1e2d254ee70ed20c419a5e5a598d8357104d7ba1cbe7b6170"
+  }
+}

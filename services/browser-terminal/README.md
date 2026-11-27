@@ -8,13 +8,19 @@ intercept terminal input.
 
 Opening the terminal creates an iframe and loads wterm, unkernel and a custom
 ARM64 Alpine Linux image. No Linux assets are requested during the initial page
-load. The guest has Fish, GNU Bash, BusyBox's Unix commands, curl, Git, sudo,
-neofetch, OpenSSH (`ssh`, `scp`, `sftp`), `ssh-keygen`, tmux with Oh My Tmux, Oh
-My Posh, and zoxide. Fish is the default login shell for both accounts. Neofetch
-runs on interactive Fish startup. The `visitor` account has passwordless sudo,
-and the guest's root account has an empty password (`sudo -i` or `su -`).
-Commands run in the visitor's browser. No host files, login tokens or SSH keys
-are mounted into the VM.
+load. The first terminal open downloads about 35.8 MB: a gzip-compressed kernel
+and the guest image, in 1 MiB chunks with up to six requests in flight across
+both assets. Chunks are reassembled in order, verified with SHA-256, and saved
+in Cache Storage. Later opens reuse those immutable assets. Cache failures do
+not prevent boot, and corrupt cached entries are downloaded again. The kernel
+compiles while the image downloads; the worker reads the completed image from a
+local Blob URL. The guest has Fish, GNU Bash, BusyBox's Unix commands, curl,
+Git, sudo, neofetch, OpenSSH (`ssh`, `scp`, `sftp`), `ssh-keygen`, tmux with Oh
+My Tmux, Oh My Posh, and zoxide. Fish is the default login shell for both
+accounts. Neofetch runs on interactive Fish startup. The `visitor` account has
+passwordless sudo, and the guest's root account has an empty password (`sudo -i`
+or `su -`). Commands run in the visitor's browser. No host files, login tokens
+or SSH keys are mounted into the VM.
 
 Drag the pane divider (or use its arrow keys when focused) to resize the split.
 The website scrolls independently in the top pane. Hiding the terminal restores
@@ -98,15 +104,18 @@ mapping (LZ4-compressed EROFS does not boot on this kernel).
 ## Verification
 
 ```sh
+npm run test:assets --prefix services/browser-terminal
 npm run test:linux --prefix services/browser-terminal
 ```
 
-This boots the committed distro in unkernel, verifies Fish as the default shell
-for both accounts, Fish history, tmux with Oh My Tmux, Oh My Posh, zoxide
-directory jumps, OpenSSH, curl, Git, automatic neofetch, passwordless root/sudo,
-a Unix pipeline, terminal geometry, root filesystem capacity, an SSH key
-exchange with GitHub, an HTTPS download, and Git remote discovery through the
-production Orange Pi relay. It does not authenticate to a remote account. Set
+The asset tests verify chunk concurrency, ordering, cache reuse, retries,
+checksums, storage failure, and cancellation. The Linux smoke test boots the
+committed distro in unkernel and verifies Fish as the default shell for both
+accounts, Fish history, tmux with Oh My Tmux, Oh My Posh, zoxide directory
+jumps, OpenSSH, curl, Git, automatic neofetch, passwordless root/sudo, a Unix
+pipeline, terminal geometry, root filesystem capacity, an SSH key exchange with
+GitHub, an HTTPS download, and Git remote discovery through the production
+Orange Pi relay. It does not authenticate to a remote account. Set
 `TERMINAL_TEST_RELAY` to test against a different WISP relay. Node 24 runs the
 test with `--experimental-wasm-jspi`. Website playback tests remain under
 `deno test --allow-env=NODE_ENV lib/`.
