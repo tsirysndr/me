@@ -4,8 +4,9 @@
   "type": "module",
   "scripts": {
     "build": "node build.mjs",
-    "test:assets": "node --test download-assets.test.mjs image-disk.test.mjs",
+    "test:assets": "node --test download-assets.test.mjs image-disk.test.mjs icmp-network.test.mjs",
     "profile:linux": "node --experimental-wasm-jspi profile-boot.mjs ../../static/terminal/linux/alpine.erofs --save",
+    "test:icmp": "node --experimental-wasm-jspi smoke-icmp.mjs",
     "test:worker": "node --experimental-wasm-jspi smoke-worker.mjs",
     "test:linux": "node --experimental-wasm-jspi smoke-linux.mjs"
   },

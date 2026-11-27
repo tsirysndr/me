@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "start": "node server.mjs",
-    "test": "node --test server.test.mjs"
+    "test": "node --test server.test.mjs icmp.test.mjs"
   },
   "dependencies": {
     "@mercuryworkshop/wisp-js": "0.5.3",

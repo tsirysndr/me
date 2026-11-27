@@ -87,7 +87,13 @@ await writeFile(
 
 const workerVersion = createHash("sha256");
 for (
-  const source of ["kernel-worker.mjs", "image-disk.mjs", "download-assets.mjs"]
+  const source of [
+    "kernel-worker.mjs",
+    "image-disk.mjs",
+    "download-assets.mjs",
+    "icmp-network.mjs",
+    "../terminal-relay/icmp-policy.mjs",
+  ]
 ) workerVersion.update(await readFile(new URL(source, import.meta.url)));
 workerVersion.update(unkernelVersion).update(JSON.stringify(bootAssets));
 await build({

@@ -1,0 +1,24 @@
+[Unit]
+Description=Browser terminal public ICMP echo helper
+
+[Service]
+Type=simple
+WorkingDirectory=/home/orangepi/github/me/services/terminal-relay
+ExecStartPre=/usr/bin/rm -f %t/terminal-icmp/echo.sock
+ExecStart=/home/orangepi/.local/share/mise/installs/node/latest/bin/node icmp-helper.mjs
+Environment=ICMP_SOCKET=%t/terminal-icmp/echo.sock
+RuntimeDirectory=terminal-icmp
+RuntimeDirectoryMode=0700
+Restart=on-failure
+RestartSec=5
+# ping needs its existing file capability. The main relay retains NoNewPrivileges.
+NoNewPrivileges=false
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=read-only
+MemoryMax=64M
+CPUQuota=10%
+TasksMax=16
+
+[Install]
+WantedBy=default.target

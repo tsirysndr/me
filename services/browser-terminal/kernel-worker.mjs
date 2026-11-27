@@ -1,10 +1,12 @@
 import {
   bundledBoot,
   createKernel,
+  NetStack,
   openDataDisk,
   wispBackend,
 } from "unkernel/web";
 import { downloadPool } from "./download-assets.mjs";
+import { enableIcmpEcho } from "./icmp-network.mjs";
 import { openImageDisk } from "./image-disk.mjs";
 
 let vm;
@@ -72,6 +74,16 @@ async function boot({ image, relayUrl }) {
     name: "portfolio-linux",
     size: 4 * 1024 ** 3,
   });
+  const echoUrl = new URL(relayUrl);
+  echoUrl.protocol = echoUrl.protocol === "wss:" ? "https:" : "http:";
+  const network = enableIcmpEcho(
+    new NetStack({ backend: wispBackend([relayUrl]), log }),
+    {
+      url: echoUrl.href,
+      signal: abort.signal,
+    },
+  );
+  log("Configuring TCP networking and relayed ICMP echo");
   vm = await createKernel({
     kernel,
     distro: disk,
@@ -79,7 +91,7 @@ async function boot({ image, relayUrl }) {
     memoryMiB: 1024,
     cmdline: "console=hvc0 rdinit=/init kw.user=visitor quiet loglevel=3",
     consoleSize: { cols: size[0], rows: size[1] },
-    net: wispBackend([relayUrl]),
+    net: network,
     onProgress: ({ stage }) => log(`Kernel: ${stage}`),
     log,
     onOutput(bytes) {

@@ -40,15 +40,35 @@ npm start
 The service listens only on `127.0.0.1:8181`. `/healthz` is a local health
 check. Set `RELAY_ORIGIN` to test with another frontend origin.
 
+## ICMP echo
+
+`POST /terminal/relay/` accepts
+`{ "target": "1.1.1.1", "ttl": 64, "bytes": 56 }` from the website Origin. Only
+canonical public IPv4 addresses are accepted; private, loopback, link-local,
+Tailscale, multicast and reserved destinations are rejected. The browser network
+adapter returns an echo reply only after `ping` on the Orange Pi receives one.
+It preserves the guest identifier, sequence and payload, with valid checksums.
+RTT includes the browser-to-relay round trip; this is relayed echo, not
+arbitrary raw IP forwarding.
+
+The main relay retains `NoNewPrivileges=true`. A separate user service runs
+`/usr/bin/ping` with fixed arguments through `execFile`, using the binary's
+existing file capability. It accepts requests only on a mode-0600 Unix socket
+inside a mode-0700 runtime directory. It does not listen on a network port or
+require root configuration changes. The helper caps probes at four concurrent,
+four per second (burst eight), 256 payload bytes, and a 2.5-second subprocess
+timeout. No reply is fabricated for failed probes. Other ICMP types and external
+IPv6 ping are not supported.
+
 ## Orange Pi deployment
 
 From `/home/orangepi/github/me/services/terminal-relay`:
 
 ```sh
 npm ci --ignore-scripts --omit=dev
-cp terminal-relay.service ~/.config/systemd/user/
+cp terminal-relay.service terminal-icmp.service ~/.config/systemd/user/
 systemctl --user daemon-reload
-systemctl --user enable --now terminal-relay.service
+systemctl --user enable --now terminal-icmp.service terminal-relay.service
 ```
 
 Add this handler before the website's catch-all handler in Caddy's `:8081`

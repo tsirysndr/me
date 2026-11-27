@@ -1,4 +1,6 @@
 import { createServer } from "node:http";
+import { readProbe } from "./icmp-request.mjs";
+import { probeViaHelper } from "./icmp-client.mjs";
 import { pathToFileURL } from "node:url";
 import { WebSocketServer } from "ws";
 import { server as wisp } from "@mercuryworkshop/wisp-js/server";
@@ -24,6 +26,7 @@ export function createRelay({
   origin = "https://tsiry-sandratraina.com",
   maxClients = 8,
   maxSessionMs = 60 * 60 * 1000,
+  probe = probeViaHelper,
 } = {}) {
   configureWisp();
   const sockets = new Set();
@@ -32,11 +35,37 @@ export function createRelay({
     maxPayload: 64 * 1024,
     perMessageDeflate: false,
   });
-  const httpServer = createServer((request, response) => {
+  const httpServer = createServer(async (request, response) => {
     response.setHeader("Cache-Control", "no-store");
     if (request.url === "/healthz") {
       response.writeHead(200, { "Content-Type": "application/json" });
       response.end(JSON.stringify({ status: "ok", clients: sockets.size }));
+      return;
+    }
+    if (request.method === "POST" && request.url === "/terminal/relay/") {
+      if (request.headers.origin !== origin) {
+        response.writeHead(403).end();
+        return;
+      }
+      let value;
+      try {
+        value = await readProbe(request);
+      } catch {
+        response.writeHead(400).end();
+        return;
+      }
+      const abort = new AbortController();
+      response.once("close", () => {
+        if (!response.writableEnded) abort.abort();
+      });
+      try {
+        const result = await probe(value, abort.signal);
+        response.writeHead(200, { "Content-Type": "application/json" }).end(
+          JSON.stringify(result),
+        );
+      } catch {
+        if (!response.destroyed) response.writeHead(503).end();
+      }
       return;
     }
     response.writeHead(404);

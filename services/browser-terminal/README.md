@@ -82,6 +82,13 @@ on TCP ports 22, 80 and 443, supporting SSH, curl and Git over HTTPS. Private
 networks and other ports are blocked. SSH authentication happens against the
 destination server.
 
+Public IPv4 `ping` uses a separate ICMP echo bridge through the same Orange Pi
+relay URL. The browser preserves the original echo payload and returns a reply
+only when the Orange Pi receives one from the target. The relay blocks private
+and reserved addresses and bounds probe rates and payload sizes. RTT includes
+the relay path. This supports echo requests, not all ICMP types or IPv6 ping.
+Use `sudo ping` if the guest reports a permission error.
+
 The frontend uses its own origin for the relay URL. Production Caddy supplies
 this route. For local development, run the relay with
 `RELAY_ORIGIN=http://localhost:8017` and proxy `/terminal/relay/` to it; local
