@@ -4,7 +4,7 @@ RUN mkdir /src && tar -xzf /tmp/posh.tar.gz -C /src --strip-components=1
 WORKDIR /src/src
 RUN --mount=type=cache,target=/go/pkg/mod \
     --mount=type=cache,target=/root/.cache/go-build \
-    CGO_ENABLED=0 GOOS=linux GOARCH=386 go build -trimpath \
+    CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -trimpath \
     -ldflags='-s -w -X github.com/jandedobbeleer/oh-my-posh/src/build.Version=33.4.1' \
     -o /out/oh-my-posh .
 
@@ -16,7 +16,7 @@ RUN mkdir -p /out/skel/.tmux && tar -xzf /tmp/tmux.tar.gz -C /out/skel/.tmux --s
 
 FROM alpine:3.22.8@sha256:49340b346798875b5592e5d420241f2f9cfba5f47e62ebb1446a1b34734e898f AS linux
 
-RUN apk add --no-cache bash fish busybox-suid openssh-client openssh-keygen curl git sudo tmux zoxide perl ncurses less linux-virt ca-certificates cpio
+RUN apk add --no-cache bash fish busybox-suid openssh-client openssh-keygen curl git sudo tmux zoxide perl ncurses less ca-certificates
 COPY --from=posh /out/oh-my-posh /usr/local/bin/oh-my-posh
 COPY --from=posh /src/COPYING /usr/share/licenses/oh-my-posh/LICENSE
 COPY --from=tmux-config /out/skel/ /etc/skel/
@@ -27,11 +27,9 @@ COPY config.fish /etc/skel/.config/fish/config.fish
 COPY neofetch /usr/local/bin/neofetch
 COPY neofetch-LICENSE.txt /usr/share/licenses/neofetch/LICENSE
 RUN echo '3dc33493e54029fb1528251552093a9f9a2894fcf94f9c3a6f809136a42348c7  /usr/local/bin/neofetch' | sha256sum -c - && chmod 755 /usr/local/bin/neofetch
-COPY bootstrap /init
-COPY init /sbin/browser-init
+COPY inittab /etc/inittab
 COPY bashrc /etc/skel/.bashrc
-RUN chmod 755 /init /sbin/browser-init && \
-    adduser -D -s /usr/bin/fish visitor && \
+RUN adduser -D -s /usr/bin/fish visitor && \
     printf '. ~/.bashrc\n' > /home/visitor/.bash_profile && \
     mkdir -p /home/visitor/.ssh && chmod 700 /home/visitor/.ssh && \
     chown -R visitor:visitor /home/visitor && \
@@ -44,23 +42,24 @@ RUN chmod 755 /init /sbin/browser-init && \
     visudo -cf /etc/sudoers && \
     printf 'browser\n' > /etc/hostname
 
-# Keep only the emulated NIC and console drivers and their dependencies.
-RUN kernel="$(ls /lib/modules)" && mkdir /tmp/modules && \
-    for driver in ne2k-pci virtio_pci virtio_console; do \
-      modprobe -S "$kernel" --show-depends "$driver"; \
-    done > /tmp/required-modules && \
-    awk '$1 == "insmod" {print $2}' /tmp/required-modules | \
-    while read -r module; do cp --parents "$module" /tmp/modules; done && \
-    cp /lib/modules/"$kernel"/modules.builtin* /lib/modules/"$kernel"/modules.order /tmp/modules/lib/modules/"$kernel"/ && \
-    rm -rf /lib/modules && cp -a /tmp/modules/lib/modules /lib/modules && \
-    depmod "$kernel" && rm -rf /tmp/modules /tmp/required-modules
-
-RUN mkdir /out && cp /boot/vmlinuz-virt /out/vmlinuz && \
+# The bundled unkernel base mounts this read-only distro below a writable overlay.
+RUN mkdir /out && printf 'alpine\n' > /usr/lib/kw-distro && \
+    printf 'portfolio-alpine-fish-v1\n' > /usr/lib/kw-image && \
     apk info -v | sort > /out/packages.txt && \
-    rm -rf /boot /var/cache/apk/* /lib/firmware && \
-    cd / && find . -path ./out -prune -o -path ./proc -prune -o -path ./sys -prune -o -path ./dev -prune -o -print | \
-    cpio -o -H newc 2>/dev/null | gzip -9 > /out/initramfs.gz && \
-    cd /out && sha256sum vmlinuz initramfs.gz > SHA256SUMS
+    rm -rf /var/cache/apk/* && \
+    tar --exclude=./out --exclude=./proc --exclude=./sys --exclude=./dev -cf /out/rootfs.tar -C / .
+
+FROM --platform=$BUILDPLATFORM alpine:3.22.8@sha256:49340b346798875b5592e5d420241f2f9cfba5f47e62ebb1446a1b34734e898f AS image
+RUN apk add --no-cache build-base autoconf automake libtool pkgconf zstd-dev lz4-dev util-linux-dev
+ADD --checksum=sha256:7d135aa2550326a5acf20f53c518aea5a8900015ce50700044e40f818c31dd80 https://git.kernel.org/pub/scm/linux/kernel/git/xiang/erofs-utils.git/snapshot/erofs-utils-1.9.4.tar.gz /tmp/erofs.tar.gz
+RUN mkdir /erofs && tar -xzf /tmp/erofs.tar.gz -C /erofs --strip-components=1 && \
+    cd /erofs && ./autogen.sh && ./configure --with-libzstd --disable-fuse && \
+    make -j4 && make install
+COPY --from=linux /out/ /out/
+RUN mkdir /rootfs && tar -xpf /out/rootfs.tar -C /rootfs && \
+    mkdir -p /rootfs/dev /rootfs/proc /rootfs/sys /rootfs/run /rootfs/tmp && \
+    mkfs.erofs -L kwroot -zzstd,level=15 -C131072 -Efragments /out/alpine.erofs /rootfs && \
+    rm /out/rootfs.tar && cd /out && sha256sum alpine.erofs > SHA256SUMS
 
 FROM scratch
-COPY --from=linux /out/ /
+COPY --from=image /out/ /

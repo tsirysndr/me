@@ -1,15 +1,15 @@
 import { WTerm } from "@wterm/dom";
-import { V86 } from "v86";
+import { checkSupport, createKernel } from "unkernel/web";
 
 let vm;
+const pendingInput = [];
+const bootAbort = new AbortController();
 let ready = false;
 let consoleReady = false;
 let stopped = false;
 let started = false;
 let hidden = false;
 let resize = [80, 24];
-let outputTimer = 0;
-let bootOutput = "";
 let bootTimeout;
 let promptSignal = "";
 const outputDecoder = new TextDecoder();
@@ -22,7 +22,8 @@ const tellParent = (type, extra = {}) => {
 const status = (text, error = false) => tellParent("status", { text, error });
 const input = (data) => {
   if (consoleReady && !stopped) {
-    vm.bus.send("virtio-console0-input-bytes", data);
+    if (vm) vm.write(data);
+    else pendingInput.push(data);
   }
 };
 const terminal = new WTerm(host, {
@@ -31,7 +32,7 @@ const terminal = new WTerm(host, {
   onBinary: input,
   onResize: (cols, rows) => {
     resize = [cols, rows];
-    if (started) vm.bus.send("virtio-console0-resize", resize);
+    if (started) vm.resize(...resize);
     requestAnimationFrame(() => {
       host.scrollTop = host.scrollHeight;
     });
@@ -42,16 +43,10 @@ function fail(message) {
   if (stopped) return;
   stopped = true;
   clearTimeout(bootTimeout);
-  clearTimeout(outputTimer);
-  vm?.destroy();
+  bootAbort.abort();
+  vm?.stop();
   status(message, true);
   terminal.write(`\r\n${message}\r\nUse Restart to try again.\r\n`);
-}
-
-function flushBootOutput() {
-  outputTimer = 0;
-  if (bootOutput && !consoleReady && !stopped) terminal.write(bootOutput);
-  bootOutput = "";
 }
 
 // Capture the toggle before the terminal can forward it to Fish or SSH.
@@ -94,8 +89,8 @@ addEventListener("unhandledrejection", (event) => {
 addEventListener("pagehide", () => {
   stopped = true;
   clearTimeout(bootTimeout);
-  clearTimeout(outputTimer);
-  vm?.destroy();
+  bootAbort.abort();
+  vm?.stop();
   terminal.destroy();
 });
 
@@ -105,63 +100,61 @@ try {
   status("Loading Linux…");
   terminal.write("Starting Linux in WebAssembly…\r\n");
   const asset = (name) => `/terminal/${name}?${__LINUX_VERSION__}`;
-  vm = new V86({
-    wasm_path: asset("v86.wasm"),
-    memory_size: 512 * 1024 * 1024,
-    vga_memory_size: 512 * 1024,
-    bios: { url: asset("seabios.bin") },
-    vga_bios: { url: asset("vgabios.bin") },
-    bzimage: { url: asset("linux/vmlinuz") },
-    initrd: { url: asset("linux/initramfs.gz") },
-    cmdline:
-      "console=ttyS0,115200 rdinit=/init tsc=reliable random.trust_cpu=on quiet loglevel=3",
-    virtio_console: { type: "none" },
-    net_device: {
-      relay_url: `wisps://${location.host}/terminal/relay/`,
-    },
-    disable_keyboard: true,
-    disable_mouse: true,
-    autostart: true,
-  });
-  vm.add_listener("download-progress", (event) => {
-    if (!started && event.lengthComputable && event.total) {
-      status(`Loading Linux… ${Math.round(event.loaded / event.total * 100)}%`);
-    }
-  });
-  vm.add_listener("emulator-ready", () => {
-    started = true;
-    status("Booting Linux…");
-    vm.bus.send("virtio-console0-resize", resize);
-  });
-  vm.add_listener("serial0-output-byte", (byte) => {
-    if (consoleReady || stopped) return;
-    bootOutput += String.fromCharCode(byte);
-    if (!outputTimer) outputTimer = setTimeout(flushBootOutput, 16);
-  });
-  vm.add_listener("virtio-console0-output-bytes", (bytes) => {
-    if (stopped) return;
-    if (!consoleReady) {
-      consoleReady = true;
-      clearTimeout(outputTimer);
-      bootOutput = "";
-      vm.bus.send("virtio-console0-resize", resize);
-      status("Preparing shell…");
-    }
-    if (!ready) {
-      const signal = promptSignal +
-        outputDecoder.decode(bytes, { stream: true });
-      promptSignal = signal.slice(-16);
-      if (signal.includes("\x1b]133;A\x07")) {
-        ready = true;
-        clearTimeout(bootTimeout);
-        status("Fish · Linux in your browser");
-        if (!hidden) terminal.focus();
-      }
-    }
-    terminal.write(bytes);
-  });
+  const support = await checkSupport();
+  if (!support.ok) throw new Error(support.problems.join(" "));
   bootTimeout = setTimeout(() => fail("Linux startup timed out."), 180_000);
+  vm = await createKernel({
+    worker: true,
+    signal: bootAbort.signal,
+    kernel: asset(`unkernel/${__UNKERNEL_VERSION__}/unkernel.wasm`),
+    distro: asset("distro"),
+    memoryMiB: 512,
+    cmdline: "console=hvc0 rdinit=/init kw.user=visitor quiet loglevel=3",
+    consoleSize: { cols: resize[0], rows: resize[1] },
+    net: {
+      kind: "net",
+      backend: {
+        kind: "wisp",
+        servers: [`wss://${location.host}/terminal/relay/`],
+      },
+    },
+    onProgress: ({ stage }) => {
+      if (!ready) status(`Loading Linux… ${stage}`);
+    },
+    onOutput: (bytes) => receiveOutput(bytes),
+  });
+  for (const bytes of pendingInput.splice(0)) vm.write(bytes);
+  started = true;
+  vm.resize(...resize);
+  vm.exited.then(({ kind }) => {
+    if (!stopped) fail(`Linux stopped (${kind}).`);
+  });
 } catch (error) {
   console.error(error);
-  fail("Linux could not load. Check your connection and restart.");
+  fail(
+    `Linux could not load. ${
+      error.message || "Check your connection and restart."
+    }`,
+  );
+}
+
+function receiveOutput(bytes) {
+  if (stopped) return;
+  if (!consoleReady) {
+    consoleReady = true;
+    vm?.resize(...resize);
+    status("Preparing shell…");
+  }
+  if (!ready) {
+    const signal = promptSignal +
+      outputDecoder.decode(bytes, { stream: true });
+    promptSignal = signal.slice(-16);
+    if (signal.includes("\x1b]133;A\x07")) {
+      ready = true;
+      clearTimeout(bootTimeout);
+      status("Fish · Linux in your browser");
+      if (!hidden) terminal.focus();
+    }
+  }
+  terminal.write(bytes);
 }

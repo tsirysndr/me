@@ -6,15 +6,15 @@ it to fill the page or restores the split. **?** shows shortcuts outside text
 fields. The existing **− / +** volume shortcuts stay on the page and do not
 intercept terminal input.
 
-Opening the terminal creates an iframe and loads wterm, v86 and a small Alpine
-Linux image. No Linux assets are requested during the initial page load. The
-guest has Fish, GNU Bash, BusyBox's Unix commands, curl, Git, sudo, neofetch,
-OpenSSH (`ssh`, `scp`, `sftp`), `ssh-keygen`, tmux with Oh My Tmux, Oh My Posh,
-and zoxide. Fish is the default login shell for both accounts. Neofetch runs on
-interactive Fish startup. The `visitor` account has passwordless sudo, and the
-guest's root account has an empty password (`sudo -i` or `su -`). Commands run
-in the visitor's browser. No host files, login tokens or SSH keys are mounted
-into the VM.
+Opening the terminal creates an iframe and loads wterm, unkernel and a custom
+ARM64 Alpine Linux image. No Linux assets are requested during the initial page
+load. The guest has Fish, GNU Bash, BusyBox's Unix commands, curl, Git, sudo,
+neofetch, OpenSSH (`ssh`, `scp`, `sftp`), `ssh-keygen`, tmux with Oh My Tmux, Oh
+My Posh, and zoxide. Fish is the default login shell for both accounts. Neofetch
+runs on interactive Fish startup. The `visitor` account has passwordless sudo,
+and the guest's root account has an empty password (`sudo -i` or `su -`).
+Commands run in the visitor's browser. No host files, login tokens or SSH keys
+are mounted into the VM.
 
 Drag the pane divider (or use its arrow keys when focused) to resize the split.
 The website scrolls independently in the top pane. Hiding the terminal restores
@@ -23,13 +23,19 @@ tab. Reloading the page or clicking **Restart** starts a fresh VM and clears
 temporary files, including any SSH keys or `known_hosts` entries created inside
 it.
 
-The VM has 512 MiB of RAM and a 384 MiB tmpfs root filesystem. Boot moves out of
-the initial ramfs into this writable mount, so `df -h /` reports its capacity.
-`/dev` is a separate devtmpfs for device entries, not the main storage volume.
+Unkernel runs the Linux kernel as WebAssembly and ARM64 programs through its
+userland emulator. The VM has 512 MiB of RAM. Its EROFS distro is read-only; a
+temporary writable overlay holds guest files until restart. No persistent disk
+is attached.
 
-The virtio console carries terminal input, output, and resize events. Page
-volume shortcuts never receive keystrokes from the terminal iframe. Light/dark
-theme changes update the terminal without restarting Linux.
+The kernel runs in a Web Worker, keeping the website responsive without
+requiring cross-origin isolation. Its console carries input, output, and resize
+events. Page volume shortcuts never receive keystrokes from the terminal iframe.
+Light/dark theme changes update the terminal without restarting Linux.
+
+Unkernel requires WebAssembly JSPI and the other features checked by its SDK. An
+unsupported browser receives an explanatory startup error. There is no v86
+fallback.
 
 ## Shell tools
 
@@ -52,8 +58,7 @@ panes use Fish as well.
 
 ## Networking
 
-The guest uses v86's isolated virtual network (`192.168.86.100`, gateway/DNS
-`192.168.86.1`). v86 resolves DNS over HTTPS. SSH connections use the
+Unkernel's Linux network connects through its SDK's Wisp backend to the
 [Orange Pi WISP relay](../terminal-relay/README.md) at
 `wss://tsiry-sandratraina.com/terminal/relay/`. The relay permits public targets
 on TCP ports 22, 80 and 443, supporting SSH, curl and Git over HTTPS. Private
@@ -70,22 +75,24 @@ commands work without a relay.
 Requires Docker and Node.js 24+. From the repository root:
 
 ```sh
-docker build --platform linux/386 \
+docker build --platform linux/arm64 \
   --output type=local,dest=static/terminal/linux services/browser-terminal/linux
 npm ci --ignore-scripts --prefix services/browser-terminal
 npm run build --prefix services/browser-terminal
 deno task build
 ```
 
-The Docker build cross-builds the x86 guest on the Mac. It does not run a Nix
-build. Linux and frontend assets are committed under `static/terminal/`, so the
-Orange Pi's normal Fresh build needs neither Docker nor a guest image rebuild.
-The image's package versions and checksums are recorded in
+The Docker build builds the ARM64 guest on the Mac. It does not run a Nix build.
+Linux and frontend assets are committed under `static/terminal/`, so the Orange
+Pi's normal Fresh build needs neither Docker nor a guest image rebuild. The
+image's package versions and checksums are recorded in
 `static/terminal/linux/packages.txt` and `SHA256SUMS`.
 
-The build script pins v86/wterm through npm's lockfile, fetches BIOS files from
-v86 commit `9457e7a`, verifies their SHA-256 checksums, and versions frontend
-asset URLs. It includes v86's WebAssembly fallback for older browser engines.
+The build script pins unkernel and wterm through npm's lockfile, copies the SDK,
+kernel bundle and licenses locally, and versions SDK and guest asset URLs. No
+third-party runtime CDN is used. The Docker image builder labels the EROFS image
+`kwroot` and uses Zstandard compression, as required by unkernel's flat memory
+mapping (LZ4-compressed EROFS does not boot on this kernel).
 
 ## Verification
 
@@ -93,27 +100,26 @@ asset URLs. It includes v86's WebAssembly fallback for older browser engines.
 npm run test:linux --prefix services/browser-terminal
 ```
 
-This boots the actual committed kernel/initramfs in v86, verifies Fish as the
-default shell for both accounts, Fish history, tmux with Oh My Tmux, Oh My Posh,
-zoxide directory jumps, OpenSSH, curl, Git, automatic neofetch, passwordless
-root/sudo, a Unix pipeline, terminal geometry, root filesystem capacity, an SSH
-key exchange with GitHub, an HTTPS download, and Git remote discovery through
-the production Orange Pi relay. It does not authenticate to a remote account.
-Set `TERMINAL_TEST_RELAY` to test against a different WISP relay. Set
-`DEBUG_BOOT=1` for serial boot logs. Website playback tests remain under
+This boots the committed distro in unkernel, verifies Fish as the default shell
+for both accounts, Fish history, tmux with Oh My Tmux, Oh My Posh, zoxide
+directory jumps, OpenSSH, curl, Git, automatic neofetch, passwordless root/sudo,
+a Unix pipeline, terminal geometry, root filesystem capacity, an SSH key
+exchange with GitHub, an HTTPS download, and Git remote discovery through the
+production Orange Pi relay. It does not authenticate to a remote account. Set
+`TERMINAL_TEST_RELAY` to test against a different WISP relay. Node 24 runs the
+test with `--experimental-wasm-jspi`. Website playback tests remain under
 `deno test --allow-env=NODE_ENV lib/`.
 
 ## Upstream software and sources
 
 - [wterm](https://github.com/vercel-labs/wterm), Apache-2.0; a copy of its
   license ships in `static/terminal/wterm-LICENSE.txt`.
-- [v86](https://github.com/copy/v86/tree/9457e7a), BSD-2-Clause; license in
-  `static/terminal/v86-LICENSE.txt`.
-- [SeaBIOS](https://www.seabios.org/) and
-  [VGABIOS](https://www.nongnu.org/vgabios/), GPL/LGPL firmware distributed by
-  v86 in its [BIOS directory](https://github.com/copy/v86/tree/9457e7a/bios).
-- Alpine Linux 3.22.8 (x86), kernel 6.12.119, Bash 5.2.37 and OpenSSH 10.0p2;
-  corresponding package recipes and source references are available in
+- [unkernel](https://github.com/pithings/unkernel/tree/fd204d3), version
+  `0.2.0-261126-fd204d3`: MIT SDK, GPL-2.0-or-later kernel and base system.
+  Licenses and third-party notices ship under `static/terminal/unkernel-*`;
+  corresponding sources and build instructions are in the pinned upstream tree.
+- Alpine Linux 3.22.8 (ARM64), Bash 5.2.37 and OpenSSH 10.0p2; corresponding
+  package recipes and source references are available in
   [Alpine aports 3.22](https://gitlab.alpinelinux.org/alpine/aports/-/tree/3.22-stable/main)
   and the
   [Alpine source archive](https://distfiles.alpinelinux.org/distfiles/v3.22/).
@@ -125,9 +131,9 @@ Set `TERMINAL_TEST_RELAY` to test against a different WISP relay. Set
   pinned at `58a3dcc0`; the upstream configuration and licenses are installed
   unmodified in `~/.tmux`.
 - [Oh My Posh 33.4.1](https://github.com/JanDeDobbeleer/oh-my-posh/tree/v33.4.1),
-  cross-compiled with Go for Linux/386, with its license in
+  cross-compiled with Go for Linux/ARM64, with its license in
   `/usr/share/licenses/oh-my-posh` in the guest.
-- Fish, tmux 3.5a, and zoxide 0.9.7 come from Alpine's x86 packages.
+- Fish, tmux 3.5a, and zoxide 0.9.7 come from Alpine's ARM64 packages.
 
 The Dockerfile and guest initialization scripts in `linux/` describe the image
 customizations. No SSH daemon runs in the browser image.

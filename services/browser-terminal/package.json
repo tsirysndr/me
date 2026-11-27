@@ -4,14 +4,13 @@
   "type": "module",
   "scripts": {
     "build": "node build.mjs",
-    "test:linux": "node smoke-linux.mjs"
+    "test:linux": "node --experimental-wasm-jspi smoke-linux.mjs"
   },
   "dependencies": {
     "@wterm/dom": "0.6.0",
-    "v86": "0.5.476"
+    "unkernel": "0.2.0-261126-fd204d3"
   },
   "devDependencies": {
-    "esbuild": "0.27.0",
-    "ws": "8.22.0"
+    "esbuild": "0.27.0"
   }
 }

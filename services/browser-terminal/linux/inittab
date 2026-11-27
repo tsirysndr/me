@@ -1,0 +1,7 @@
+# unkernel provides mounts, networking, and the kwbox login/session service.
+::sysinit:/usr/lib/kw/rc
+::sysinit:/usr/lib/kw/net
+hvc0::respawn:/usr/bin/kwbox tty login
+::respawn:/usr/bin/kwbox tty serve
+::ctrlaltdel:/sbin/reboot
+::shutdown:/usr/lib/kw/shutdown

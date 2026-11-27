@@ -1,16 +1,17 @@
 # Browser Linux networking relay
 
 This standalone Node.js service provides WISP networking for a browser Linux VM.
-It does not run a shell on the Orange Pi. The terminal UI, Linux image, Bash and
+It does not run a shell on the Orange Pi. The terminal UI, Linux image, Fish and
 OpenSSH client are separate browser components.
 
 Public WebSocket URL: `wss://tsiry-sandratraina.com/terminal/relay/`
 
-For v86, configure:
+For unkernel, pass the relay as its network backend:
 
 ```js
-net_device: {
-  relay_url: "wisps://tsiry-sandratraina.com/terminal/relay/";
+net: {
+  kind: "net",
+  backend: { kind: "wisp", servers: ["wss://tsiry-sandratraina.com/terminal/relay/"] },
 }
 ```
 
@@ -69,5 +70,5 @@ curl http://127.0.0.1:8181/healthz
 ```
 
 Uses [wisp-js](https://github.com/MercuryWorkshop/wisp-js), pinned through the
-npm lockfile. The relay's WISP version 1 endpoint is compatible with
-[v86](https://github.com/copy/v86/blob/master/docs/networking.md).
+npm lockfile. The relay's WISP endpoint is compatible with
+[unkernel's Wisp backend](https://github.com/pithings/unkernel#add-a-network).
