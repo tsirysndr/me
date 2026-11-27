@@ -1,9 +1,18 @@
 import { WTerm } from "@wterm/dom";
-import { checkSupport, createKernel } from "unkernel/web";
 import { downloadAsset, downloadPool } from "./download-assets.mjs";
 
 let vm;
-let distroUrl;
+let kernelWorker;
+const bootStart = performance.now();
+function bootLog(message) {
+  if (!stopped) {
+    terminal.write(
+      `[${
+        ((performance.now() - bootStart) / 1000).toFixed(2)
+      }s] ${message}\r\n`,
+    );
+  }
+}
 const pendingInput = [];
 const bootAbort = new AbortController();
 let ready = false;
@@ -93,7 +102,6 @@ addEventListener("pagehide", () => {
   clearTimeout(bootTimeout);
   bootAbort.abort();
   vm?.stop();
-  if (distroUrl) URL.revokeObjectURL(distroUrl);
   terminal.destroy();
 });
 
@@ -101,69 +109,98 @@ try {
   await terminal.init();
   tellParent("mounted");
   status("Loading Linux…");
-  terminal.write("Starting Linux in WebAssembly…\r\n");
-  const support = await checkSupport();
-  if (!support.ok) throw new Error(support.problems.join(" "));
+  bootLog("Checking browser WebAssembly support");
+  if (
+    typeof WebAssembly.Suspending !== "function" ||
+    typeof WebAssembly.promising !== "function"
+  ) {
+    throw new Error("This browser does not support WebAssembly JSPI.");
+  }
   bootTimeout = setTimeout(() => fail("Linux startup timed out."), 180_000);
   let cache;
   try {
     cache = await caches.open("portfolio-linux-assets-v1");
   } catch { /* Optional storage. */ }
-  const pool = downloadPool(6);
-  let loaded = 0;
-  const total = __BOOT_ASSETS__.kernel.bytes + __BOOT_ASSETS__.distro.bytes;
-  const onProgress = (bytes) => {
-    loaded += bytes;
-    const message = `Loading Linux… ${(loaded / 1e6).toFixed(1)} / ${
-      (total / 1e6).toFixed(1)
-    } MB`;
-    status(message);
-    terminal.write(`\r\x1b[2K${message}`);
-  };
-  const options = { pool, cache, signal: bootAbort.signal, onProgress };
-  const kernelReady = downloadAsset(__BOOT_ASSETS__.kernel, options).then((
-    blob,
-  ) =>
-    WebAssembly.compileStreaming(
-      new Response(blob.stream().pipeThrough(new DecompressionStream("gzip")), {
-        headers: { "Content-Type": "application/wasm" },
-      }),
-    )
+  bootLog("Starting the Linux worker; cached boot blocks will be reused");
+  kernelWorker = new Worker(
+    `/terminal/kernel-worker.js?${__WORKER_VERSION__}`,
+    { type: "module" },
   );
-  const [kernel, distro] = await Promise.all([
-    kernelReady,
-    downloadAsset(__BOOT_ASSETS__.distro, options),
-  ]);
-  bootAbort.signal.throwIfAborted();
-  distroUrl = URL.createObjectURL(distro);
-  terminal.write("\r\x1b[2KStarting Linux…\r\n");
-  vm = await createKernel({
-    worker: true,
-    signal: bootAbort.signal,
-    kernel,
-    distro: distroUrl,
-    memoryMiB: 1024,
-    disks: [{
-      kind: "data",
-      template: "bundled",
-      mode: "snapshot",
-      name: "portfolio-linux",
-      size: 4 * 1024 ** 3,
-    }],
-    cmdline: "console=hvc0 rdinit=/init kw.user=visitor quiet loglevel=3",
-    consoleSize: { cols: resize[0], rows: resize[1] },
-    net: {
-      kind: "net",
-      backend: {
-        kind: "wisp",
-        servers: [`wss://${location.host}/terminal/relay/`],
-      },
+  let resolveExit;
+  vm = {
+    write(bytes) {
+      kernelWorker.postMessage({ type: "input", bytes });
     },
-    onProgress: ({ stage }) => {
-      if (!ready) status(`Loading Linux… ${stage}`);
+    resize(cols, rows) {
+      kernelWorker.postMessage({ type: "resize", cols, rows });
     },
-    onOutput: (bytes) => receiveOutput(bytes),
+    stop() {
+      kernelWorker.terminate();
+      resolveExit({ kind: "stopped" });
+    },
+    exited: new Promise((resolve) => {
+      resolveExit = resolve;
+    }),
+  };
+  let lastImageMB = -1;
+  kernelWorker.addEventListener("message", ({ data }) => {
+    if (stopped) return;
+    if (data.type === "output") receiveOutput(data.bytes);
+    else if (data.type === "log" && !ready) bootLog(data.message);
+    else if (data.type === "error") fail(data.message);
+    else if (data.type === "exit") resolveExit(data.result);
+    else if (data.type === "image-progress" && !ready) {
+      const mb = Math.floor((data.fetched + data.cached) / 1e6);
+      if (mb !== lastImageMB) {
+        lastImageMB = mb;
+        const text = `Boot blocks: ${
+          (data.fetched / 1e6).toFixed(1)
+        } MB downloaded, ${(data.cached / 1e6).toFixed(1)} MB cached`;
+        status(text);
+        bootLog(text);
+      }
+    }
   });
+  kernelWorker.addEventListener(
+    "error",
+    (event) => fail(`Linux worker failed: ${event.message}`),
+  );
+  kernelWorker.postMessage({
+    type: "boot",
+    image: __BOOT_ASSETS__.distro,
+    relayUrl: `wss://${location.host}/terminal/relay/`,
+    cols: resize[0],
+    rows: resize[1],
+  });
+  let loaded = 0;
+  bootLog(
+    `Loading the compressed kernel (${
+      (__BOOT_ASSETS__.kernel.bytes / 1e6).toFixed(1)
+    } MB)`,
+  );
+  const kernelBlob = await downloadAsset(__BOOT_ASSETS__.kernel, {
+    pool: downloadPool(2),
+    cache,
+    signal: bootAbort.signal,
+    onProgress(bytes, hit) {
+      loaded += bytes;
+      bootLog(
+        `Kernel: ${(loaded / 1e6).toFixed(1)} / ${
+          (__BOOT_ASSETS__.kernel.bytes / 1e6).toFixed(1)
+        } MB${hit ? " from cache" : " downloaded"}`,
+      );
+    },
+  });
+  bootLog("Decompressing and compiling the WebAssembly kernel");
+  const kernel = await WebAssembly.compileStreaming(
+    new Response(
+      kernelBlob.stream().pipeThrough(new DecompressionStream("gzip")),
+      { headers: { "Content-Type": "application/wasm" } },
+    ),
+  );
+  bootAbort.signal.throwIfAborted();
+  bootLog("Kernel compiled; handing it to the worker");
+  kernelWorker.postMessage({ type: "kernel", kernel });
   for (const bytes of pendingInput.splice(0)) vm.write(bytes);
   started = true;
   vm.resize(...resize);
@@ -193,6 +230,7 @@ function receiveOutput(bytes) {
     if (signal.includes("\x1b]133;A\x07")) {
       ready = true;
       clearTimeout(bootTimeout);
+      bootLog("Fish is ready; remaining tools load on demand");
       status("Fish · Linux in your browser");
       if (!hidden) terminal.focus();
     }

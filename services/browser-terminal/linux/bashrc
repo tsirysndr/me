@@ -10,9 +10,9 @@ alias ll='ls -lah'
 if [[ -n ${TMUX-} ]]; then
     :
 elif (( COLUMNS < 76 )); then
-    neofetch --off --colors 3 7 7 3 7 7 --disable gpu resolution de wm wm_theme theme icons
+    neofetch --off --colors 3 7 7 3 7 7 --disable gpu resolution de wm wm_theme theme icons packages
 else
-    neofetch --ascii_colors 3 --colors 3 7 7 3 7 7 --disable gpu resolution de wm wm_theme theme icons
+    neofetch --ascii_colors 3 --colors 3 7 7 3 7 7 --disable gpu resolution de wm wm_theme theme icons packages
 fi
 
 eval "$(oh-my-posh init bash --config "$HOME/.config/oh-my-posh/orange.omp.json")"

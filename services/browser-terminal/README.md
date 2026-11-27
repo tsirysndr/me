@@ -8,16 +8,25 @@ intercept terminal input.
 
 Opening the terminal creates an iframe and loads wterm, unkernel and a custom
 ARM64 Alpine Linux image. No Linux assets are requested during the initial page
-load. The first terminal open downloads about 35.8 MB: a gzip-compressed kernel
-and the guest image, in 1 MiB chunks with up to six requests in flight across
-both assets. Chunks are reassembled in order, verified with SHA-256, and saved
-in Cache Storage. Later opens reuse those immutable assets. Cache failures do
-not prevent boot, and corrupt cached entries are downloaded again. The kernel
-compiles while the image downloads; the worker reads the completed image from a
-local Blob URL. The guest has Fish, GNU Bash, BusyBox's Unix commands, curl,
-Git, sudo, neofetch, OpenSSH (`ssh`, `scp`, `sftp`), `ssh-keygen`, tmux with Oh
-My Tmux, Oh My Posh, and zoxide. Fish is the default login shell for both
-accounts. Neofetch runs on interactive Fish startup. The `visitor` account has
+load. The first prompt needs about 8.9 MB of kernel and guest data (plus the
+terminal/SDK JavaScript), rather than the complete 31.6 MB distro image. The
+compressed kernel downloads in concurrent chunks while a worker prefetches only
+the measured boot blocks. At most six asset downloads run concurrently.
+
+The image uses upstream's boot-first EROFS layout. A read-only block device
+verifies and caches each 128 KiB block; binaries and libraries for other tools
+load only when used. Whole-image caches from the previous loader remain usable.
+Kernel and image caches contain immutable software only; guest files still reset
+on reload. Cache failures do not prevent boot, and corrupt blocks are fetched
+again. The worker owns the kernel, disk and networking so guest work does not
+block the page. Timestamped boot logs show downloads, cache hits, compilation,
+disk setup, kernel stages and shell readiness.
+
+The guest has Fish, GNU Bash, BusyBox's Unix commands, curl, Git, sudo,
+neofetch, OpenSSH (`ssh`, `scp`, `sftp`), `ssh-keygen`, tmux with Oh My Tmux, Oh
+My Posh, and zoxide. Fish is the default login shell for both accounts. Neofetch
+runs on interactive Fish startup, skipping the package count so it does not load
+APK and crypto libraries just for that number. The `visitor` account has
 passwordless sudo, and the guest's root account has an empty password (`sudo -i`
 or `su -`). Commands run in the visitor's browser. No host files, login tokens
 or SSH keys are mounted into the VM.
@@ -47,10 +56,11 @@ fallback.
 ## Shell tools
 
 Both `visitor` and root use Fish's native syntax highlighting, autosuggestions,
-and history search. Oh My Posh provides an orange prompt. Fish's configuration
-is `~/.config/fish/config.fish`; history stays inside the temporary VM and
-resets on reload. Bash is also installed for scripts and interactive use via
-`bash`.
+and history search. The initial orange prompt uses native Fish to keep boot
+small. Run `posh` to enable the installed Oh My Posh prompt on demand. Fish's
+configuration is `~/.config/fish/config.fish`; history stays inside the
+temporary VM and resets on reload. Bash is also installed for scripts and
+interactive use via `bash`.
 
 Run `tmux` to start a multiplexer session. Oh My Tmux is already installed
 through `~/.tmux.conf`; edit `~/.tmux.conf.local` to customize it. The
@@ -85,6 +95,7 @@ Requires Docker and Node.js 24+. From the repository root:
 docker build --platform linux/arm64 \
   --output type=local,dest=static/terminal/linux services/browser-terminal/linux
 npm ci --ignore-scripts --prefix services/browser-terminal
+npm run profile:linux --prefix services/browser-terminal
 npm run build --prefix services/browser-terminal
 deno task build
 ```
@@ -99,13 +110,34 @@ The build script pins unkernel and wterm through npm's lockfile, copies the SDK,
 kernel bundle and licenses locally, and versions SDK and guest asset URLs. No
 third-party runtime CDN is used. The Docker image builder labels the EROFS image
 `kwroot` and uses Zstandard compression, as required by unkernel's flat memory
-mapping (LZ4-compressed EROFS does not boot on this kernel).
+mapping (LZ4-compressed EROFS does not boot on this kernel). Upstream's pinned
+EROFS layout patch and `mktree.py` put boot files first. `boot-files` lists the
+files from a traced plain-image boot, and `boot-profile.json` records the
+compressed blocks used before the prompt. The frontend build rejects a stale
+profile, then hashes every image block. The image does not need rebuilding on
+the Orange Pi.
+
+To retrace the boot file layout after substantial package changes:
+
+```sh
+docker build --platform linux/arm64 --target trace-output \
+  --output type=local,dest=/tmp/portfolio-trace services/browser-terminal/linux
+node --experimental-wasm-jspi services/browser-terminal/profile-boot.mjs \
+  /tmp/portfolio-trace/alpine.erofs
+python3 services/browser-terminal/linux/erofs-trace.py \
+  /tmp/portfolio-trace/alpine.erofs /tmp/me-boot-reads.txt \
+  > services/browser-terminal/linux/boot-files
+```
+
+Then rebuild the normal image and run `profile:linux` and the frontend build.
+The profiling SDK runs locally under Node; it does not need a preview server.
 
 ## Verification
 
 ```sh
 npm run test:assets --prefix services/browser-terminal
 npm run test:linux --prefix services/browser-terminal
+npm run test:worker --prefix services/browser-terminal
 ```
 
 The asset tests verify chunk concurrency, ordering, cache reuse, retries,
@@ -113,11 +145,12 @@ checksums, storage failure, and cancellation. The Linux smoke test boots the
 committed distro in unkernel and verifies Fish as the default shell for both
 accounts, Fish history, tmux with Oh My Tmux, Oh My Posh, zoxide directory
 jumps, OpenSSH, curl, Git, automatic neofetch, passwordless root/sudo, a Unix
-pipeline, terminal geometry, root filesystem capacity, an SSH key exchange with
-GitHub, an HTTPS download, and Git remote discovery through the production
-Orange Pi relay. It does not authenticate to a remote account. Set
-`TERMINAL_TEST_RELAY` to test against a different WISP relay. Node 24 runs the
-test with `--experimental-wasm-jspi`. Website playback tests remain under
+pipeline, terminal geometry, root filesystem capacity, a small initial download
+and on-demand reads for other tools, an SSH key exchange with GitHub, an HTTPS
+download, and Git remote discovery through the production Orange Pi relay. It
+does not authenticate to a remote account. Set `TERMINAL_TEST_RELAY` to test
+against a different WISP relay. Node 24 runs the test with
+`--experimental-wasm-jspi`. Website playback tests remain under
 `deno test --allow-env=NODE_ENV lib/`.
 
 ## Upstream software and sources
@@ -128,6 +161,9 @@ test with `--experimental-wasm-jspi`. Website playback tests remain under
   `0.2.0-261126-fd204d3`: MIT SDK, GPL-2.0-or-later kernel and base system.
   Licenses and third-party notices ship under `static/terminal/unkernel-*`;
   corresponding sources and build instructions are in the pinned upstream tree.
+- The EROFS layout patch, `mktree.py` and `erofs-trace.py` are vendored from
+  [unkernel fd204d3 guest tools](https://github.com/pithings/unkernel/tree/fd204d3/guest/tools),
+  retaining their upstream copyright and SPDX headers.
 - Alpine Linux 3.22.8 (ARM64), Bash 5.2.37 and OpenSSH 10.0p2; corresponding
   package recipes and source references are available in
   [Alpine aports 3.22](https://gitlab.alpinelinux.org/alpine/aports/-/tree/3.22-stable/main)

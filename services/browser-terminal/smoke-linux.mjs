@@ -1,4 +1,6 @@
 import assert from "node:assert/strict";
+import { openImageDisk } from "./image-disk.mjs";
+import { downloadPool } from "./download-assets.mjs";
 import { fileURLToPath } from "node:url";
 import { stripVTControlCharacters } from "node:util";
 import {
@@ -31,6 +33,29 @@ const diskPath = join(testDirectory, "data.img");
 await createImageFromKwsparse(diskPath, bundledBoot(kernel).datadisk);
 await truncate(diskPath, 4 * 1024 ** 3);
 
+const imageAsset = JSON.parse(
+  await readFile(
+    new URL("../../static/terminal/boot-assets.json", import.meta.url),
+    "utf8",
+  ),
+).distro;
+const imageBytes = await readFile(`${root}linux/alpine.erofs`);
+let downloadedImageBytes = 0;
+let bootImageBytes = 0;
+const image = await openImageDisk(imageAsset, {
+  pool: downloadPool(4),
+  fetchImpl(_url, { headers }) {
+    const [, from, to] = /bytes=(\d+)-(\d+)/.exec(headers.Range).map(Number);
+    const bytes = imageBytes.subarray(from, to + 1);
+    downloadedImageBytes += bytes.length;
+    return new Response(bytes, {
+      status: 206,
+      headers: { "Content-Range": `bytes ${from}-${to}/${imageBytes.length}` },
+    });
+  },
+});
+await image.prefetch();
+
 let output = "";
 let sent = false;
 let historyProbeSent = false;
@@ -54,6 +79,8 @@ function receiveOutput(bytes) {
   output += text;
   const prompts = output.split(promptMarker).length - 1;
   if (!historyProbeSent && prompts >= 1) {
+    bootImageBytes = downloadedImageBytes;
+    console.log(`\nBOOT_IMAGE_BYTES=${bootImageBytes}\n`);
     historyProbeSent = true;
     setTimeout(
       () =>
@@ -85,6 +112,14 @@ function receiveOutput(bytes) {
     clearTimeout(timeout);
     try {
       output = stripVTControlCharacters(output);
+      assert(
+        bootImageBytes < 5 * 1024 ** 2,
+        "Boot must not download the whole image",
+      );
+      assert(
+        downloadedImageBytes > bootImageBytes,
+        "Heavy tools must load their blocks on demand",
+      );
       assert.match(output, /FISH=4\./);
       assert.match(output, /DEFAULT_SHELL=\/usr\/bin\/fish/);
       assert.match(output, /GNU bash, version 5\./);
@@ -124,9 +159,8 @@ function receiveOutput(bytes) {
 }
 
 vm = await createKernel({
-  worker: true,
   kernel,
-  distro: `${root}linux/alpine.erofs`,
+  distro: image,
   memoryMiB: 1024,
   disks: [{ kind: "file", path: diskPath, snapshot: true }],
   cmdline: "console=hvc0 rdinit=/init kw.user=visitor quiet loglevel=3",

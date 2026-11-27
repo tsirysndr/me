@@ -49,17 +49,31 @@ RUN mkdir /out && printf 'alpine\n' > /usr/lib/kw-distro && \
     rm -rf /var/cache/apk/* && \
     tar --exclude=./out --exclude=./proc --exclude=./sys --exclude=./dev -cf /out/rootfs.tar -C / .
 
-FROM --platform=$BUILDPLATFORM alpine:3.22.8@sha256:49340b346798875b5592e5d420241f2f9cfba5f47e62ebb1446a1b34734e898f AS image
+FROM --platform=$BUILDPLATFORM alpine:3.22.8@sha256:49340b346798875b5592e5d420241f2f9cfba5f47e62ebb1446a1b34734e898f AS erofs-tools
 RUN apk add --no-cache build-base autoconf automake libtool pkgconf zstd-dev lz4-dev util-linux-dev
 ADD --checksum=sha256:7d135aa2550326a5acf20f53c518aea5a8900015ce50700044e40f818c31dd80 https://git.kernel.org/pub/scm/linux/kernel/git/xiang/erofs-utils.git/snapshot/erofs-utils-1.9.4.tar.gz /tmp/erofs.tar.gz
+COPY *.patch /tmp/patches/
 RUN mkdir /erofs && tar -xzf /tmp/erofs.tar.gz -C /erofs --strip-components=1 && \
-    cd /erofs && ./autogen.sh && ./configure --with-libzstd --disable-fuse && \
+    cd /erofs && for patchfile in /tmp/patches/*.patch; do patch -p1 < "$patchfile"; done && ./autogen.sh && ./configure --with-libzstd --disable-fuse && \
     make -j4 && make install
+RUN apk add --no-cache python3
+FROM erofs-tools AS filesystem
 COPY --from=linux /out/ /out/
 RUN mkdir /rootfs && tar -xpf /out/rootfs.tar -C /rootfs && \
-    mkdir -p /rootfs/dev /rootfs/proc /rootfs/sys /rootfs/run /rootfs/tmp && \
-    mkfs.erofs -L kwroot -zzstd,level=15 -C131072 -Efragments /out/alpine.erofs /rootfs && \
+    mkdir -p /rootfs/dev /rootfs/proc /rootfs/sys /rootfs/run /rootfs/tmp
+
+FROM filesystem AS trace
+RUN mkfs.erofs -L kwroot -Enoinline_data /out/alpine.erofs /rootfs && \
     rm /out/rootfs.tar && cd /out && sha256sum alpine.erofs > SHA256SUMS
+
+FROM filesystem AS image
+COPY boot-files /boot-files
+COPY mktree.py /mktree.py
+COPY make-image.sh /make-image.sh
+RUN sh /make-image.sh
+
+FROM scratch AS trace-output
+COPY --from=trace /out/ /
 
 FROM scratch
 COPY --from=image /out/ /

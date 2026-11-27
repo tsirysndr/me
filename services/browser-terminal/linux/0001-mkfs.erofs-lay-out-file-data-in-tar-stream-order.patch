@@ -1,0 +1,366 @@
+SPDX-License-Identifier: GPL-2.0-or-later OR MIT
+Copyright (C) 2026 Pooya Parsa <pooya@pi0.io>
+
+mkfs.erofs: lay out a tar stream's file data in stream order (unkernel)
+
+The distro images are read over HTTP: the SDK fetches the first `prefetch`
+bytes of an image in one request, and anything else lazily, a Range request
+per miss (guest/lib/image.sh). That prefix covers a boot only if everything
+a boot reads sits at the front. Upstream mkfs.erofs 1.9.4 writes compressed
+data breadth-first through the tree, sorted by name, whatever the tar order
+(--sort=none applies to uncompressed images only), places the packed inode
+of -Efragments last, and inode metadata and directories between the data
+or, with --MZ, in a metadata zone after all of it. Three options make the
+layout follow an order the caller gives (in the tar stream):
+
+  --sort=tar        files with data are written in tar stream order,
+                    compressed or not: the tree walk handles them first, in
+                    that order (lib/inode.c), and then the rest as before
+                    (directories, symlinks, devices), skipping them
+  --nofrag-first=N  the first N of those keep their tails in their own
+                    pclusters instead of the packed inode (-Efragments), so
+                    their data is complete where it lies
+  --MZ-front=N      with --MZ, the metadata zone (every inode and directory
+                    block) goes into N blocks reserved right after the
+                    superblock instead of after all data; if N is too few,
+                    mkfs fails and says how many it needs (the layout does
+                    not depend on N, so a second run with that many fits)
+
+Same license as the files it changes: GPL-2.0+ OR MIT (lib/, include/),
+MIT (mkfs/main.c).
+
+--- a/include/erofs/importer.h
++++ b/include/erofs/importer.h
+@@ -63,6 +63,10 @@
+ 	bool all_fragments;
+ 	bool compress_dir;
+ 	char fragdedupe;
++	/* --sort=tar: write file data in tar stream order, compressed too */
++	bool data_in_tar_order;
++	/* --nofrag-first=N: the first N of them stay out of the packed inode */
++	u32 nofrag_first;
+ };
+ 
+ struct erofs_importer {
+--- a/include/erofs/inode.h
++++ b/include/erofs/inode.h
+@@ -46,6 +46,8 @@
+ struct erofs_inode *erofs_new_inode(struct erofs_sb_info *sbi);
+ int erofs_importer_load_tree(struct erofs_importer *im, bool rebuild,
+ 			     bool incremental);
++void erofs_importer_order_data(struct erofs_importer *im,
++			       struct erofs_inode *inode);
+ struct erofs_inode *erofs_mkfs_build_special_from_fd(struct erofs_importer *im,
+ 						     int fd, const char *name);
+ int erofs_fixup_root_inode(struct erofs_inode *root);
+--- a/include/erofs/internal.h
++++ b/include/erofs/internal.h
+@@ -160,6 +160,8 @@
+ 	bool useqpl;
+ 	bool sb_valid;
+ 	u32 metazone_startblk;
++	/* (mkfs.erofs) --MZ-front: blocks reserved for the metazone, where */
++	u32 metazone_rsvblks, metazone_rsvblkaddr;
+ };
+ 
+ /* make sure that any user of the erofs headers has atleast 64bit off_t type */
+@@ -274,6 +276,10 @@
+ 	/* OVL: non-merge dir that may contain whiteout entries */
+ 	bool whiteouts;
+ 	bool dot_omitted;
++	/* (mkfs.erofs) keep the tail out of the packed inode (-Efragments) */
++	bool nofragment;
++	/* (mkfs.erofs --sort=tar) the files with data in tar stream order */
++	struct list_head i_dataorder;
+ 
+ 	unsigned int xattr_isize;
+ 	unsigned int extent_isize;
+--- a/lib/compress.c
++++ b/lib/compress.c
+@@ -575,7 +575,8 @@
+ 	unsigned int len = ctx->tail - ctx->head;
+ 	bool is_packed_inode = erofs_is_packed_inode(inode);
+ 	bool tsg = (ctx->seg_idx + 1 >= ictx->seg_num), final = !ctx->remaining;
+-	bool may_packing = (params->fragments && tsg && final && !is_packed_inode &&
++	bool may_packing = (params->fragments && !inode->nofragment &&
++			    tsg && final && !is_packed_inode &&
+ 			    !erofs_is_metabox_inode(inode));
+ 	bool data_unaligned = ictx->data_unaligned;
+ 	bool may_inline = (params->ztailpacking && !data_unaligned && tsg &&
+@@ -1272,7 +1273,8 @@
+ 	struct z_erofs_compress_ictx *ictx = ctx->ictx;
+ 	const struct erofs_importer_params *params = ictx->im->params;
+ 	struct erofs_inode *inode = ictx->inode;
+-	bool frag = params->fragments && !erofs_is_packed_inode(inode) &&
++	bool frag = params->fragments && !inode->nofragment &&
++		!erofs_is_packed_inode(inode) &&
+ 		!erofs_is_metabox_inode(inode) &&
+ 		ctx->seg_idx >= ictx->seg_num - 1;
+ 	struct erofs_vfile *vf = ictx->vf;
+@@ -1819,7 +1821,8 @@
+ 	const struct erofs_importer_params *params = im->params;
+ 	struct erofs_sb_info *sbi = inode->sbi;
+ 	struct z_erofs_compress_ictx *ictx;
+-	bool frag = params->fragments && !erofs_is_packed_inode(inode) &&
++	bool frag = params->fragments && !inode->nofragment &&
++		!erofs_is_packed_inode(inode) &&
+ 		!erofs_is_metabox_inode(inode);
+ 	bool all_fragments = params->all_fragments && frag;
+ 
+@@ -1930,7 +1933,8 @@
+ {
+ 	const struct erofs_importer_params *params = ictx->im->params;
+ 	struct erofs_inode *inode = ictx->inode;
+-	bool frag = params->fragments && !erofs_is_packed_inode(inode) &&
++	bool frag = params->fragments && !inode->nofragment &&
++		!erofs_is_packed_inode(inode) &&
+ 		!erofs_is_metabox_inode(inode);
+ 	bool all_fragments = params->all_fragments && frag;
+ 	int ret;
+--- a/lib/inode.c
++++ b/lib/inode.c
+@@ -2135,6 +2135,24 @@
+ 	inode->i_parent = (void *)((unsigned long)dir | 1);
+ }
+ 
++/* --sort=tar: the files with data in tar stream order, one reference each */
++static LIST_HEAD(erofs_dataorder);
++
++void erofs_importer_order_data(struct erofs_importer *im,
++			       struct erofs_inode *inode)
++{
++	struct erofs_importer_params *params = im->params;
++
++	if (!params->data_in_tar_order)
++		return;
++	if (params->nofrag_first) {
++		inode->nofragment = true;
++		--params->nofrag_first;
++	}
++	list_add_tail(&inode->i_dataorder, &erofs_dataorder);
++	(void)erofs_igrab(inode);
++}
++
+ static int erofs_mkfs_dump_tree(const struct erofs_mkfs_btctx *ctx)
+ {
+ 	struct erofs_importer *im = ctx->im;
+@@ -2174,6 +2192,28 @@
+ 		sbi->root_nid = root->nid;
+ 	}
+ 
++	/*
++	 * --sort=tar: the files with data first, in tar stream order, so that
++	 * their data (compressed or not) follows that order; the walk below
++	 * skips them as visited.  Files no longer in the tree (replaced by a
++	 * later entry) hold only the list's reference: skip them.
++	 */
++	err = 0;
++	while (!list_empty(&erofs_dataorder)) {
++		struct erofs_inode *inode = list_first_entry(&erofs_dataorder,
++				struct erofs_inode, i_dataorder);
++
++		list_del(&inode->i_dataorder);
++		if (!err && erofs_atomic_read(&inode->i_count) > 1 &&
++		    !erofs_inode_visited(inode)) {
++			erofs_mark_parent_inode(inode, inode->i_parent);
++			err = erofs_mkfs_handle_inode(ctx, inode);
++		}
++		erofs_iput(inode);
++	}
++	if (err)
++		return err;
++
+ 	do {
+ 		struct erofs_inode *dir = dumpdir;
+ 		/* used for adding sub-directories in reverse order due to FIFO */
+--- a/lib/metabox.c
++++ b/lib/metabox.c
+@@ -66,6 +66,20 @@
+ 		sbi->m2gr = m2gr;
+ 		/* FIXME: sbi->meta_blkaddr should be 0 for 48-bit layouts */
+ 		sbi->meta_blkaddr = EROFS_META_NEW_ADDR;
++
++		/* --MZ-front: the blocks right after the superblock */
++		if (sbi->metazone_rsvblks) {
++			struct erofs_buffer_head *bh;
++
++			bh = erofs_balloc(sbi->bmgr, DATA,
++				(erofs_off_t)sbi->metazone_rsvblks <<
++					sbi->blkszbits, 0);
++			if (IS_ERR(bh))
++				return PTR_ERR(bh);
++			erofs_mapbh(NULL, bh->block);
++			sbi->metazone_rsvblkaddr = bh->block->blkaddr;
++			erofs_bdrop(bh, false);
++		}
+ 	}
+ 
+ 	if (!sbi->mxgr && erofs_sb_has_metabox(sbi)) {
+@@ -128,14 +142,19 @@
+ 
+ 	if (!m2gr)
+ 		return 0;
+-	bh = erofs_balloc(sbi->bmgr, DATA, 0, 0);
+-	if (IS_ERR(bh))
+-		return PTR_ERR(bh);
+-	erofs_mapbh(NULL, bh->block);
+-	pos_out = erofs_btell(bh, false);
+-	if (__erofs_unlikely(pos_out == EROFS_NULL_ADDR)) {
+-		erofs_bdrop(bh, true);
+-		return -EFAULT;
++	if (sbi->metazone_rsvblks) {
++		bh = NULL;
++		pos_out = erofs_pos(sbi, sbi->metazone_rsvblkaddr);
++	} else {
++		bh = erofs_balloc(sbi->bmgr, DATA, 0, 0);
++		if (IS_ERR(bh))
++			return PTR_ERR(bh);
++		erofs_mapbh(NULL, bh->block);
++		pos_out = erofs_btell(bh, false);
++		if (__erofs_unlikely(pos_out == EROFS_NULL_ADDR)) {
++			erofs_bdrop(bh, true);
++			return -EFAULT;
++		}
+ 	}
+ 	meta_blkaddr = pos_out >> sbi->blkszbits;
+ 	sbi->metazone_startblk = meta_blkaddr;
+@@ -146,9 +165,18 @@
+ 		return ret;
+ 
+ 	length = erofs_mapbh(m2bgr, NULL) << sbi->blkszbits;
+-	ret = erofs_bh_balloon(bh, length);
+-	if (ret < 0)
+-		return ret;
++	if (!bh) {
++		if (length > erofs_pos(sbi, sbi->metazone_rsvblks)) {
++			erofs_err("the metazone needs %llu blocks, %u reserved (--MZ-front)",
++				  (length >> sbi->blkszbits) | 0ULL,
++				  sbi->metazone_rsvblks);
++			return -ENOSPC;
++		}
++	} else {
++		ret = erofs_bh_balloon(bh, length);
++		if (ret < 0)
++			return ret;
++	}
+ 
+ 	do {
+ 		count = min_t(erofs_off_t, length, INT_MAX);
+@@ -158,8 +186,10 @@
+ 			break;
+ 		pos_out += count;
+ 	} while (length -= count);
+-	bh->op = &erofs_drop_directly_bhops;
+-	erofs_bdrop(bh, false);
++	if (bh) {
++		bh->op = &erofs_drop_directly_bhops;
++		erofs_bdrop(bh, false);
++	}
+ 	sbi->meta_blkaddr += meta_blkaddr;
+ 	return 0;
+ }
+--- a/lib/tar.c
++++ b/lib/tar.c
+@@ -1211,6 +1211,8 @@
+ 				ret = tarerofs_write_uncompressed_file(inode, tar);
+ 			} else {
+ 				ret = tarerofs_write_file_data(inode, tar);
++				if (!ret)
++					erofs_importer_order_data(im, inode);
+ 			}
+ 			if (ret)
+ 				goto out;
+--- a/mkfs/main.c
++++ b/mkfs/main.c
+@@ -105,6 +105,8 @@
+ 	{"MZ", optional_argument, NULL, 537},
+ 	{"xattr-prefix", required_argument, NULL, 538},
+ 	{"xattr-inode-digest", optional_argument, NULL, 539},
++	{"nofrag-first", required_argument, NULL, 540},
++	{"MZ-front", required_argument, NULL, 541},
+ 	{0, 0, 0, 0},
+ };
+ 
+@@ -187,6 +189,8 @@
+ 		" -UX                    use a given filesystem UUID\n"
+ 		" --zD[=<0|1>]           specify directory compression: 0=disable [default], 1=enable\n"
+ 		" --MZ[=<0|[id]>]        put inode metadata ('i') and/or directory data ('d') into the separate metadata zone.\n"
++		" --MZ-front=#           put the metadata zone in # blocks right after the superblock\n"
++		"                        (it fails if # are too few, and says how many it needs)\n"
+ 		" --all-root             make all files owned by root\n"
+ #ifdef EROFS_MT_ENABLED
+ 		" --async-queue-limit=#  specify the maximum number of entries in the multi-threaded job queue\n"
+@@ -217,7 +221,10 @@
+ 		" --offset=#             skip # bytes at the beginning of IMAGE.\n"
+ 		" --root-xattr-isize=#   ensure the inline xattr size of the root directory is # bytes at least\n"
+ 		" --aufs                 replace aufs special files with overlayfs metadata\n"
+-		" --sort=<path,none>     data sorting order for tarballs as input (default: path)\n"
++		" --sort=<path,none,tar> data sorting order for tarballs as input (default: path;\n"
++		"                        tar: file data in tar stream order, also compressed data)\n"
++		" --nofrag-first=#       with --sort=tar, keep the first # files with data out of\n"
++		"                        the packed inode of -Efragments\n"
+ #ifdef S3EROFS_ENABLED
+ 		" --s3=X                 generate an image from S3-compatible object store\n"
+ 		"   [,passwd_file=Y]     X=endpoint, Y=s3fs-compatible password file\n"
+@@ -285,6 +292,7 @@
+ 	/* < 0, xattr disabled and >= INT_MAX, always use inline xattrs */
+ 	long inlinexattr_tolerance;
+ 	bool inode_metazone;
++	u32 metazone_front;
+ 	u64 unix_timestamp;
+ 	unsigned int total_zcfgs;
+ } mkfscfg = {
+@@ -1387,6 +1395,8 @@
+ 		case 527:
+ 			if (!strcmp(optarg, "none"))
+ 				erofstar.try_no_reorder = true;
++			else if (!strcmp(optarg, "tar"))
++				params->data_in_tar_order = true;
+ 			break;
+ 		case 528:
+ 			params->hard_dereference = true;
+@@ -1494,6 +1504,20 @@
+ 				return err;
+ 			}
+ 			break;
++		case 540:
++			params->nofrag_first = strtoul(optarg, &endptr, 0);
++			if (*endptr != '\0') {
++				erofs_err("invalid --nofrag-first %s", optarg);
++				return -EINVAL;
++			}
++			break;
++		case 541:
++			mkfscfg.metazone_front = strtoul(optarg, &endptr, 0);
++			if (*endptr != '\0' || !mkfscfg.metazone_front) {
++				erofs_err("invalid --MZ-front %s", optarg);
++				return -EINVAL;
++			}
++			break;
+ 		case 'V':
+ 			version();
+ 			exit(0);
+@@ -1506,6 +1530,15 @@
+ 		}
+ 	}
+ 
++	if (mkfscfg.metazone_front && !mkfscfg.inode_metazone) {
++		erofs_err("--MZ-front needs --MZ");
++		return -EINVAL;
++	}
++	if (params->nofrag_first && !params->data_in_tar_order) {
++		erofs_err("--nofrag-first needs --sort=tar");
++		return -EINVAL;
++	}
++
+ 	if (cfg.c_blobdev_path && cfg.c_chunkbits < mkfs_blkszbits) {
+ 		erofs_err("--blobdev must be used together with --chunksize");
+ 		return -EINVAL;
+@@ -1896,6 +1929,7 @@
+ 	importer_params.source = cfg.c_src_path;
+ 	importer_params.no_datainline = mkfs_no_datainline;
+ 	importer_params.dot_omitted = mkfs_dot_omitted;
++	g_sbi.metazone_rsvblks = mkfscfg.metazone_front;
+ 	err = erofs_importer_init(&importer);
+ 	if (err)
+ 		goto exit;
