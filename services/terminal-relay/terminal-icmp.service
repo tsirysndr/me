@@ -13,9 +13,9 @@ Restart=on-failure
 RestartSec=5
 # ping needs its existing file capability. The main relay retains NoNewPrivileges.
 NoNewPrivileges=false
-PrivateTmp=true
-ProtectSystem=strict
-ProtectHome=read-only
+# Filesystem namespaces in an unprivileged user unit invalidate ping's host file capability.
+# This helper stays in the host user namespace; only its private socket is exposed.
+UMask=0077
 MemoryMax=64M
 CPUQuota=10%
 TasksMax=16
