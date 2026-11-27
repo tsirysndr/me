@@ -24,9 +24,10 @@ temporary files, including any SSH keys or `known_hosts` entries created inside
 it.
 
 Unkernel runs the Linux kernel as WebAssembly and ARM64 programs through its
-userland emulator. The VM has 512 MiB of RAM. Its EROFS distro is read-only; a
-temporary writable overlay holds guest files until restart. No persistent disk
-is attached.
+userland emulator. The VM has 1 GiB of RAM and a sparse 4 GiB ext4 data disk.
+Its EROFS distro is read-only; the root overlay stores guest files on that disk.
+The disk uses snapshot mode, so writes remain local to this tab and reset on
+reload or Restart. Disk capacity is separate from guest RAM.
 
 The kernel runs in a Web Worker, keeping the website responsive without
 requiring cross-origin isolation. Its console carries input, output, and resize

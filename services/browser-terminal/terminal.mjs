@@ -108,7 +108,14 @@ try {
     signal: bootAbort.signal,
     kernel: asset(`unkernel/${__UNKERNEL_VERSION__}/unkernel.wasm`),
     distro: asset("distro"),
-    memoryMiB: 512,
+    memoryMiB: 1024,
+    disks: [{
+      kind: "data",
+      template: "bundled",
+      mode: "snapshot",
+      name: "portfolio-linux",
+      size: 4 * 1024 ** 3,
+    }],
     cmdline: "console=hvc0 rdinit=/init kw.user=visitor quiet loglevel=3",
     consoleSize: { cols: resize[0], rows: resize[1] },
     net: {
