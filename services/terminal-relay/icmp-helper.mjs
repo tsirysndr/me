@@ -1,3 +1,5 @@
+import { Resolver } from "node:dns/promises";
+import { isPublicIPv4 } from "./icmp-policy.mjs";
 import { createServer } from "node:http";
 import { execFile } from "node:child_process";
 import { chmod } from "node:fs/promises";
@@ -5,7 +7,29 @@ import { pathToFileURL } from "node:url";
 import { readProbe } from "./icmp-request.mjs";
 import { icmpSocket } from "./icmp-client.mjs";
 
+export async function resolveProbe(probe, signal, lookup) {
+  if (isPublicIPv4(probe.target)) return probe;
+  const resolver = new Resolver({ timeout: 1000, tries: 1 });
+  const cancel = () => resolver.cancel();
+  signal?.addEventListener("abort", cancel, { once: true });
+  try {
+    signal?.throwIfAborted();
+    const addresses = await (lookup || ((name) => resolver.resolve4(name)))(
+      probe.target,
+    );
+    if (
+      !addresses.length || addresses.some((address) => !isPublicIPv4(address))
+    ) throw new Error("DNS target is not public");
+    return { ...probe, target: addresses[0] };
+  } finally {
+    signal?.removeEventListener("abort", cancel);
+  }
+}
+
 export function pingOnce({ target, ttl, bytes }, signal) {
+  if (!isPublicIPv4(target)) {
+    return Promise.reject(new Error("Probe target must be a public IP"));
+  }
   return new Promise((resolve, reject) => {
     execFile("/usr/bin/ping", [
       "-n",
@@ -67,7 +91,11 @@ export function createIcmpHelper({ probe = pingOnce, now = Date.now } = {}) {
       if (!res.writableEnded) abort.abort();
     });
     try {
-      res.end(JSON.stringify(await probe(value, abort.signal)));
+      res.end(
+        JSON.stringify(
+          await probe(await resolveProbe(value, abort.signal), abort.signal),
+        ),
+      );
     } catch {
       if (!res.destroyed) {
         res.writeHead(503).end(

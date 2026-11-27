@@ -19,3 +19,6 @@ eval "$(oh-my-posh init bash --config "$HOME/.config/oh-my-posh/orange.omp.json"
 eval "$(zoxide init bash)"
 _browser_prompt_marker() { printf '\033]133;A\007'; }
 PROMPT_COMMAND+=(_browser_prompt_marker)
+
+# BusyBox ping needs root; this guest already grants passwordless sudo.
+alias ping="sudo -n /bin/ping"

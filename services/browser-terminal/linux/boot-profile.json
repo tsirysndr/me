@@ -1,6 +1,6 @@
 {
-  "sha256": "8517f2d52a0504756fab5d5a3d475ee968856e3f35efa9d808569ddc0b1a4b4d",
-  "seconds": 0.852756208,
+  "sha256": "b232adcca1e7eb1e004ecf2001dbf3aff9036866de4f4f085d5ab6403ce2d2f2",
+  "seconds": 1.07029925,
   "chunkSize": 131072,
   "bootChunks": [
     0,
@@ -38,5 +38,5 @@
     53
   ],
   "bytes": 4325376,
-  "imageBytes": 31600640
+  "imageBytes": 31596544
 }

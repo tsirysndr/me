@@ -1,4 +1,4 @@
-import { isPublicIPv4 } from "../terminal-relay/icmp-policy.mjs";
+import { isDnsName, isPublicIPv4 } from "../terminal-relay/icmp-policy.mjs";
 
 export function checksum(bytes) {
   let sum = 0;
@@ -12,17 +12,21 @@ const address = (ip) =>
   [ip >>> 24, (ip >>> 16) & 255, (ip >>> 8) & 255, ip & 255].join(".");
 
 // Echo replies are emitted only after the Orange Pi receives a real ICMP reply.
-export function enableIcmpEcho(stack, { url, signal, fetchImpl = fetch }) {
+export function enableIcmpEcho(
+  stack,
+  { url, signal, fetchImpl = fetch, hostnameForAddress = () => undefined },
+) {
   const localEcho = stack.icmpInput.bind(stack);
   let active = 0, tokens = 4, last = performance.now();
   stack.icmpInput = (frame, view, src, dst, offset, end) => {
     if (dst === stack.gw || dst === stack.dns) {
       return localEcho(frame, view, src, dst, offset, end);
     }
-    const target = address(dst), length = end - offset;
+    const target = hostnameForAddress(address(dst)) || address(dst),
+      length = end - offset;
     if (
       frame[offset] !== 8 || frame[offset + 1] !== 0 || length < 8 ||
-      length > 264 || !isPublicIPv4(target)
+      length > 264 || !(isPublicIPv4(target) || isDnsName(target))
     ) return;
     const payload = frame.slice(offset, end);
     if (checksum(payload) !== 0) return;

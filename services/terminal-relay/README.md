@@ -43,13 +43,15 @@ check. Set `RELAY_ORIGIN` to test with another frontend origin.
 ## ICMP echo
 
 `POST /terminal/relay/` accepts
-`{ "target": "1.1.1.1", "ttl": 64, "bytes": 56 }` from the website Origin. Only
-canonical public IPv4 addresses are accepted; private, loopback, link-local,
-Tailscale, multicast and reserved destinations are rejected. The browser network
-adapter returns an echo reply only after `ping` on the Orange Pi receives one.
-It preserves the guest identifier, sequence and payload, with valid checksums.
-RTT includes the browser-to-relay round trip; this is relayed echo, not
-arbitrary raw IP forwarding.
+`{ "target": "1.1.1.1", "ttl": 64, "bytes": 56 }` from the website Origin.
+Targets may be public IPv4 addresses or DNS names. The helper resolves names
+once and passes a validated numeric address to ping; mixed public/private DNS
+results are rejected. Private, loopback, link-local, Tailscale, multicast and
+reserved destinations are rejected. The browser network adapter returns an echo
+reply only after `ping` on the Orange Pi receives one. It preserves the guest
+identifier, sequence and payload, with valid checksums. RTT includes the
+browser-to-relay round trip; this is relayed echo, not arbitrary raw IP
+forwarding.
 
 The main relay retains `NoNewPrivileges=true`. A separate user service runs
 `/usr/bin/ping` with fixed arguments through `execFile`, using the binary's

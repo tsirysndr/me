@@ -15,8 +15,16 @@ export function isPublicIPv4(value) {
     (a === 203 && b === 0 && c === 113));
 }
 
+export function isDnsName(value) {
+  return typeof value === "string" && value.length <= 253 &&
+    /[a-z]/i.test(value) &&
+    /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)+\.?$/i
+      .test(value);
+}
+
 export function validProbe(value) {
-  return value && isPublicIPv4(value.target) && Number.isInteger(value.ttl) &&
+  return value && (isPublicIPv4(value.target) || isDnsName(value.target)) &&
+    Number.isInteger(value.ttl) &&
     value.ttl >= 1 && value.ttl <= 255 &&
     Number.isInteger(value.bytes) && value.bytes >= 0 && value.bytes <= 256;
 }

@@ -76,9 +76,18 @@ async function boot({ image, relayUrl }) {
   });
   const echoUrl = new URL(relayUrl);
   echoUrl.protocol = echoUrl.protocol === "wss:" ? "https:" : "http:";
+  const names = new Map();
+  const backend = wispBackend([relayUrl]);
+  const lookup = backend.lookup.bind(backend);
+  backend.lookup = async (name) => {
+    const addresses = await lookup(name);
+    for (const address of addresses) names.set(address, name);
+    return addresses;
+  };
   const network = enableIcmpEcho(
-    new NetStack({ backend: wispBackend([relayUrl]), log }),
+    new NetStack({ backend, log }),
     {
+      hostnameForAddress: (address) => names.get(address),
       url: echoUrl.href,
       signal: abort.signal,
     },

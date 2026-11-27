@@ -4,21 +4,22 @@ import { WasmBridge } from "@wterm/core";
 import { enableIcmpEcho } from "./icmp-network.mjs";
 import { stripVTControlCharacters } from "node:util";
 const origin = "https://tsiry-sandratraina.com";
-const network = enableIcmpEcho(
-  new NetStack({
-    backend: wispBackend(["wss://tsiry-sandratraina.com/terminal/relay/"], {
-      headers: { Origin: origin },
-    }),
-  }),
-  {
-    url: `${origin}/terminal/relay/`,
-    fetchImpl: (url, options) =>
-      fetch(url, {
-        ...options,
-        headers: { ...options.headers, Origin: origin },
-      }),
-  },
-);
+const names = new Map();
+const backend = wispBackend(["wss://tsiry-sandratraina.com/terminal/relay/"], {
+  headers: { Origin: origin },
+});
+const lookup = backend.lookup.bind(backend);
+backend.lookup = async (name) => {
+  const addresses = await lookup(name);
+  for (const address of addresses) names.set(address, name);
+  return addresses;
+};
+const network = enableIcmpEcho(new NetStack({ backend }), {
+  url: `${origin}/terminal/relay/`,
+  hostnameForAddress: (address) => names.get(address),
+  fetchImpl: (url, options) =>
+    fetch(url, { ...options, headers: { ...options.headers, Origin: origin } }),
+});
 const terminal = await WasmBridge.load();
 terminal.init(100, 30);
 let vm = null, output = "", sent = false;
@@ -59,7 +60,7 @@ try {
         setTimeout(
           () =>
             vm.write(
-              "\x1b[200~ping -c 1 -W 5 1.1.1.1; printf '__USER_PING_CODE=%s\\n' $status; sudo -n ping -c 2 -W 5 1.1.1.1; printf '__ROOT_PING_CODE=%s\\n' $status; echo __PING_DONE__\x1b[201~\r",
+              "\x1b[200~ping -c 1 -W 5 1.1.1.1; printf '__USER_PING_CODE=%s\\n' $status; sudo -n ping -c 2 -W 5 1.1.1.1; printf '__ROOT_PING_CODE=%s\\n' $status; sudo -n ping -c 1 -W 5 one.one.one.one; printf '__HOSTNAME_PING_CODE=%s\\n' $status; echo __PING_DONE__\x1b[201~\r",
             ),
           100,
         );
@@ -74,6 +75,8 @@ try {
   const clean = stripVTControlCharacters(output);
   console.log(clean.slice(-2500));
   assert.match(clean, /__ROOT_PING_CODE=0/);
+  assert.match(clean, /__USER_PING_CODE=0/);
+  assert.match(clean, /__HOSTNAME_PING_CODE=0/);
   assert.match(clean, /bytes from 1\.1\.1\.1/);
   console.log(
     "PASS: Linux guest received real relayed public ICMP echo replies",

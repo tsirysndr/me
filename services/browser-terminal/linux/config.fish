@@ -34,3 +34,6 @@ zoxide init fish | source
 function __browser_prompt_marker --on-event fish_prompt
     printf '\033]133;A\007'
 end
+
+# BusyBox ping needs root; this guest already grants passwordless sudo.
+alias ping 'sudo -n /bin/ping'

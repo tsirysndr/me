@@ -87,7 +87,10 @@ relay URL. The browser preserves the original echo payload and returns a reply
 only when the Orange Pi receives one from the target. The relay blocks private
 and reserved addresses and bounds probe rates and payload sizes. RTT includes
 the relay path. This supports echo requests, not all ICMP types or IPv6 ping.
-Use `sudo ping` if the guest reports a permission error.
+Wisp's virtual DNS addresses are mapped back to the hostname for echo probes;
+the helper resolves and validates its actual public IPv4 address. The
+interactive `ping` alias invokes the real BusyBox ping through the guest's
+existing passwordless sudo, since its raw socket requires root.
 
 The frontend uses its own origin for the relay URL. Production Caddy supplies
 this route. For local development, run the relay with

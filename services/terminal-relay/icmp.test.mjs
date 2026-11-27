@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { once } from "node:events";
 import { test } from "node:test";
 import { createRelay } from "./server.mjs";
-import { createIcmpHelper } from "./icmp-helper.mjs";
+import { createIcmpHelper, resolveProbe } from "./icmp-helper.mjs";
 import { isPublicIPv4 } from "./icmp-policy.mjs";
 const origin = "https://tsiry-sandratraina.com";
 const value = { target: "1.1.1.1", ttl: 64, bytes: 56 };
@@ -118,4 +118,18 @@ test("helper failures do not create successful echo replies", async (t) => {
     }),
   );
   assert.equal((await send(`${base}/echo`, value)).status, 503);
+});
+
+test("hostname probes resolve to fixed public IPs and reject private DNS answers", async () => {
+  const probe = { ...value, target: "example.com" };
+  const result = await resolveProbe(probe, undefined, () => ["1.1.1.1"]);
+  assert.equal(result.target, "1.1.1.1");
+  await assert.rejects(
+    resolveProbe(probe, undefined, () => ["127.0.0.1"]),
+    /not public/,
+  );
+  await assert.rejects(
+    resolveProbe(probe, undefined, () => ["1.1.1.1", "192.168.1.1"]),
+    /not public/,
+  );
 });

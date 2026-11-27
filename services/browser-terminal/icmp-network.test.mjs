@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { checksum, enableIcmpEcho } from "./icmp-network.mjs";
 const ip = (s) => s.split(".").reduce((a, b) => (a * 256 + Number(b)) >>> 0, 0);
-function fixture(fetchImpl) {
+function fixture(fetchImpl, options = {}) {
   const replies = [];
   let local = 0;
   const stack = {
@@ -19,7 +19,11 @@ function fixture(fetchImpl) {
       replies.push(frame);
     },
   };
-  enableIcmpEcho(stack, { url: "https://example.test/relay/", fetchImpl });
+  enableIcmpEcho(stack, {
+    url: "https://example.test/relay/",
+    fetchImpl,
+    ...options,
+  });
   const frame = new Uint8Array(47);
   frame[22] = 64;
   frame[34] = 8;
@@ -94,4 +98,26 @@ test("unreachable hosts, permission failures and private addresses never get for
     );
     assert.equal(f.local(), 1);
   }
+});
+
+test("Wisp virtual DNS addresses map back to the validated hostname", async () => {
+  let target;
+  const f = fixture((_url, options) => {
+    target = JSON.parse(options.body).target;
+    return Response.json({ reachable: true });
+  }, {
+    hostnameForAddress: (address) =>
+      address === "198.18.0.1" ? "example.com" : undefined,
+  });
+  f.stack.icmpInput(
+    f.frame,
+    new DataView(f.frame.buffer),
+    ip("10.0.2.15"),
+    ip("198.18.0.1"),
+    34,
+    47,
+  );
+  await settle();
+  assert.equal(target, "example.com");
+  assert.equal(f.replies.length, 1);
 });
